@@ -27,7 +27,7 @@ public class PictureFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         surfaceView = (SurfaceView) view.findViewById(R.id.surfaceViewPictures);
-        adaptationMaker = AdaptationMaker.getAdaptationMaker(getContext(), surfaceView);
+        adaptationMaker = AdaptationMaker.getAdaptationMaker();
     }
 
     @Override
@@ -35,6 +35,19 @@ public class PictureFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_picture, container, false);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        adaptationMaker.start(getContext(), surfaceView);
+        adaptationMaker.createApplicationStructure(getView(), 0);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        adaptationMaker.stop();
     }
 
 }

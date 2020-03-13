@@ -35,7 +35,7 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         ((Button) view.findViewById(R.id.finances)).setOnClickListener(this);
         ((Button) view.findViewById(R.id.pictures)).setOnClickListener(this);
         surfaceView = (SurfaceView) view.findViewById(R.id.surfaceViewMain);
-        adaptationMaker = AdaptationMaker.getAdaptationMaker(getContext(), surfaceView);
+        adaptationMaker = AdaptationMaker.getAdaptationMaker();
     }
 
     @Override
@@ -62,12 +62,13 @@ public class MainFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onResume() {
         super.onResume();
+        adaptationMaker.start(getContext(), surfaceView);
         adaptationMaker.createApplicationStructure(getView(), 0);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        adaptationMaker.onStop();
+        adaptationMaker.stop();
     }
 }

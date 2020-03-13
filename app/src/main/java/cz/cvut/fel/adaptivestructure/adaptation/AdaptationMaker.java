@@ -40,17 +40,17 @@ public class AdaptationMaker implements Detector.ImageListener {
     private ASDatabase db;
     private Context context;
 
-    public AdaptationMaker(Context context, SurfaceView cameraPreview) {
+    public void start(Context context, SurfaceView cameraPreview){
         this.context = context;
         this.cameraPreview = cameraPreview;
         this.cameraPreview.setAlpha(0);
         this.states = FabricState.getAllStates();
         settingDetector();
-        if (currentState == null) currentState = states.getState(NEUTRAL_STATE);
+        if(currentState == null) currentState = states.getState(NEUTRAL_STATE);
     }
 
-    public static AdaptationMaker getAdaptationMaker(Context context, SurfaceView cameraPreview) {
-        if (instance == null) instance = new AdaptationMaker(context, cameraPreview);
+    public static AdaptationMaker getAdaptationMaker() {
+        if (instance == null) instance = new AdaptationMaker();
         return instance;
     }
 
@@ -142,8 +142,9 @@ public class AdaptationMaker implements Detector.ImageListener {
         db.nodeDao().update(node);
     }
 
-    public void onStop(){
-        if(detector != null && detector.isRunning()) detector.stop();
-        //if(db != null) db.close();
+    public void stop(){
+        if(detector != null && detector.isRunning()) {
+            detector.stop();
+        }
     }
 }
