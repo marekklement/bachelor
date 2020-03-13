@@ -8,24 +8,21 @@ import android.graphics.Color;
 
 public abstract class AbstractState implements State {
 
-    private String name;
-    private float rate;
-    private long changing;
-
     private final short changingFactor = 10;
     private final short isNeutralFactor = 1;
-
     private final int defaultBackgroundColor = Color.parseColor("#333333");
     private final int defaultTextColor = Color.parseColor("#000000");
     private final int defaultAccentColor = Color.parseColor("#FFFFFF");
-
+    private String name;
+    private float rate;
+    private long changing;
     private int stateBackgroundColor;
     private int stateTextColor;
     private int stateAccentColor;
 
     private boolean ifBorderRoundOff;
 
-    public AbstractState(){
+    public AbstractState() {
         this.rate = 0;
     }
 
@@ -42,8 +39,7 @@ public abstract class AbstractState implements State {
     }
 
 
-
-    protected void setStateOptions (String backgroundColor, String textColor, String accentColor, boolean ifBorderRoundOff){
+    protected void setStateOptions(String backgroundColor, String textColor, String accentColor, boolean ifBorderRoundOff) {
         this.stateBackgroundColor = (backgroundColor == null) ? defaultBackgroundColor : Color.parseColor(backgroundColor);
         this.stateTextColor = (textColor == null) ? defaultTextColor : Color.parseColor(textColor);
         this.stateAccentColor = (accentColor == null) ? defaultAccentColor : Color.parseColor(accentColor);
@@ -61,11 +57,11 @@ public abstract class AbstractState implements State {
     }
 
     protected void setRate(float rate) {
-        if(this.rate != rate) incrementChanging();
+        if (this.rate != rate) incrementChanging();
         this.rate = rate;
     }
 
-    protected void incrementChanging(){
+    protected void incrementChanging() {
         this.changing++;
     }
 
@@ -75,12 +71,12 @@ public abstract class AbstractState implements State {
     }
 
     @Override
-    public boolean ifChange(){
+    public boolean ifChange() {
         return (changing == changingFactor);
     }
 
     @Override
-    public boolean isNeutral(){
+    public boolean isNeutral() {
         return rate < isNeutralFactor;
     }
 

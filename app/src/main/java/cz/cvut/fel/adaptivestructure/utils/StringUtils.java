@@ -1,4 +1,4 @@
-package cz.cvut.fel.adaptivestructure.Utils;
+package cz.cvut.fel.adaptivestructure.utils;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -12,7 +12,7 @@ public abstract class StringUtils {
 
     private static final String className = "com.project.lunovana.affectivatest.states.";
 
-    public static String getStateClassName(String name){
+    public static String getStateClassName(String name) {
         StringBuilder sb = new StringBuilder();
         sb.append(className);
         sb.append(name.charAt(0));
@@ -21,8 +21,8 @@ public abstract class StringUtils {
         return sb.toString();
     }
 
-    public static String getExportFileName(String exportFileName, Context context){
-        if(exportFileName == null) {
+    public static String getExportFileName(String exportFileName, Context context) {
+        if (exportFileName == null) {
             PackageManager packageManager = context.getPackageManager();
             ApplicationInfo applicationInfo = null;
             try {
@@ -37,7 +37,7 @@ public abstract class StringUtils {
         return exportFileName;
     }
 
-    public static String getStateName(String stateName){
+    public static String getStateName(String stateName) {
         StringBuilder sb = new StringBuilder();
         stateName = stateName.toUpperCase();
         sb.append(stateName.charAt(0));

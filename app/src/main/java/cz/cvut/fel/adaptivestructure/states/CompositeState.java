@@ -11,9 +11,14 @@ import java.util.Collection;
 
 public interface CompositeState {
     void addState(State state);
+
     Collection<State> getStatesLikeCollection();
+
     void setDetector(CameraDetector detector);
+
     void setRate(Face.Emotions faceEmotions);
+
     State getState(String nameState);
+
     void deleteState(State state);
 }

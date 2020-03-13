@@ -17,11 +17,17 @@ public interface NodeDao {
     @Query("SELECT * FROM node WHERE uid IN (:nodeIds)")
     List<Node> loadAllByIds(long[] nodeIds);
 
+    @Query("SELECT * FROM node WHERE uid = (:id)")
+    Node getById(long id);
+
     @Query("SELECT * FROM node WHERE name LIKE :name")
     Node findByName(String name);
 
     @Insert
     void insertAll(Node... nodes);
+
+    @Insert
+    void insert(Node node);
 
     @Delete
     void delete(Node node);

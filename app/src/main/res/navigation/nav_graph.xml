@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/mainFragment">
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="cz.cvut.fel.adaptivestructure.fragments.MainFragment"
+        android:label="fragment_main"
+        tools:layout="@layout/fragment_main" >
+        <action
+            android:id="@+id/action_mainFragment_to_pictureFragment"
+            app:destination="@id/pictureFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_financesFragment"
+            app:destination="@id/financesFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/financesFragment"
+        android:name="cz.cvut.fel.adaptivestructure.fragments.FinancesFragment"
+        android:label="fragment_finances"
+        tools:layout="@layout/fragment_finances" />
+    <fragment
+        android:id="@+id/pictureFragment"
+        android:name="cz.cvut.fel.adaptivestructure.fragments.PictureFragment"
+        android:label="fragment_picture"
+        tools:layout="@layout/fragment_picture" />
+</navigation>

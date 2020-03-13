@@ -8,7 +8,7 @@ import com.affectiva.android.affdex.sdk.detector.Face;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import cz.cvut.fel.adaptivestructure.Utils.StringUtils;
+import cz.cvut.fel.adaptivestructure.utils.StringUtils;
 
 /**
  * Created by lunovana on 12-Mar-17.
@@ -18,9 +18,9 @@ public abstract class FabricState {
 
     private static CompositeState states = null;
 
-    public static CompositeState getAllStates(){
+    public static CompositeState getAllStates() {
 
-        if(states == null) {
+        if (states == null) {
             states = new CompositeStateImpl();
 
             states.addState(new NeutralState());
@@ -33,19 +33,19 @@ public abstract class FabricState {
         return states;
     }
 
-    public static boolean addNewState(String stateName, String backgroundColor, String textColor, String accentColor, boolean changeShape, CameraDetector detector){
+    public static boolean addNewState(String stateName, String backgroundColor, String textColor, String accentColor, boolean changeShape, CameraDetector detector) {
 
         stateName = StringUtils.getStateName(stateName);
         Method setRateMethod = null;
 
         final Method[] faceEmotionsMethods = Face.Emotions.class.getMethods();
-        for(int i = 0; i < faceEmotionsMethods.length; i++){
-            if(faceEmotionsMethods[i].getName().contains("get" + stateName)){
+        for (int i = 0; i < faceEmotionsMethods.length; i++) {
+            if (faceEmotionsMethods[i].getName().contains("get" + stateName)) {
                 setRateMethod = faceEmotionsMethods[i];
             }
         }
 
-        if(setRateMethod == null) {
+        if (setRateMethod == null) {
             Log.d("ADD_STATE", "detector can't detect required emotion (" + stateName + ")");
             return false;
         }
@@ -55,13 +55,13 @@ public abstract class FabricState {
         Method setDetectorMethod = null;
 
         final Method[] cameraDetectorMethods = CameraDetector.class.getMethods();
-        for(int i = 0; i < cameraDetectorMethods.length; i++){
-            if(cameraDetectorMethods[i].getName().contains("setDetect" + stateName)){
+        for (int i = 0; i < cameraDetectorMethods.length; i++) {
+            if (cameraDetectorMethods[i].getName().contains("setDetect" + stateName)) {
                 setDetectorMethod = cameraDetectorMethods[i];
             }
         }
 
-        if(setDetectorMethod == null) {
+        if (setDetectorMethod == null) {
             Log.d("ADD_STATE", "detector can't get result from required emotion (" + stateName + ")");
             return false;
         }
@@ -82,7 +82,7 @@ public abstract class FabricState {
 
             @Override
             public void setDetector(CameraDetector detector) {
-                if(finalSetDetectorMethod !=null) try {
+                if (finalSetDetectorMethod != null) try {
                     finalSetDetectorMethod.invoke(detector, true);
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
@@ -95,16 +95,16 @@ public abstract class FabricState {
 
         newState.setDetector(detector);
 
-        if(states == null) states = getAllStates();
-        if(states.getState(stateName) == null) states.addState(newState);
+        if (states == null) states = getAllStates();
+        if (states.getState(stateName) == null) states.addState(newState);
 
         return true;
     }
 
-    public static void deleteState(String stateName){
-        if(states != null){
+    public static void deleteState(String stateName) {
+        if (states != null) {
             State state = states.getState(stateName);
-            if(state != null) states.deleteState(state);
+            if (state != null) states.deleteState(state);
         }
     }
 }
