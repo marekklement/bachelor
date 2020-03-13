@@ -3,7 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.PictureFragment">
+    tools:context=".fragments.PictureFragment"
+    android:id="@+id/parentLayout">
 
     <TextView
         android:id="@+id/pictures_text"

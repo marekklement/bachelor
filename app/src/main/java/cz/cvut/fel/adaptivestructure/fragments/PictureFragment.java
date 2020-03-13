@@ -26,8 +26,8 @@ public class PictureFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        surfaceView = (SurfaceView) view.findViewById(R.id.surfaceViewPictures);
         adaptationMaker = AdaptationMaker.getAdaptationMaker();
+        surfaceView = (SurfaceView) view.findViewById(R.id.surfaceViewPictures);
     }
 
     @Override

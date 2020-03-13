@@ -1,6 +1,5 @@
 package cz.cvut.fel.adaptivestructure.fragments;
 
-
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.SurfaceView;
@@ -25,8 +24,8 @@ public class FinancesFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        surfaceView = (SurfaceView) view.findViewById(R.id.surfaceViewFinances);
         adaptationMaker = AdaptationMaker.getAdaptationMaker();
+        surfaceView = (SurfaceView) view.findViewById(R.id.surfaceViewFinances);
     }
 
     @Override

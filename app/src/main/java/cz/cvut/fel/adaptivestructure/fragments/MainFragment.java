@@ -31,11 +31,11 @@ public class MainFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        adaptationMaker = AdaptationMaker.getAdaptationMaker();
         navController = Navigation.findNavController(view);
         ((Button) view.findViewById(R.id.finances)).setOnClickListener(this);
         ((Button) view.findViewById(R.id.pictures)).setOnClickListener(this);
         surfaceView = (SurfaceView) view.findViewById(R.id.surfaceViewMain);
-        adaptationMaker = AdaptationMaker.getAdaptationMaker();
     }
 
     @Override
