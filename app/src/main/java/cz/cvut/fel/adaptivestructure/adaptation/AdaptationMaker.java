@@ -1,20 +1,31 @@
 package cz.cvut.fel.adaptivestructure.adaptation;
 
 import android.content.Context;
+import android.text.Layout;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
 
 import com.affectiva.android.affdex.sdk.Frame;
 import com.affectiva.android.affdex.sdk.detector.CameraDetector;
 import com.affectiva.android.affdex.sdk.detector.Detector;
 import com.affectiva.android.affdex.sdk.detector.Face;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
+import androidx.fragment.app.Fragment;
 import cz.cvut.fel.adaptivestructure.database.ASDatabase;
 import cz.cvut.fel.adaptivestructure.database.DatabaseInit;
+import cz.cvut.fel.adaptivestructure.entity.MovedView;
 import cz.cvut.fel.adaptivestructure.entity.Node;
+import cz.cvut.fel.adaptivestructure.fragments.FinancesFragment;
 import cz.cvut.fel.adaptivestructure.states.CompositeState;
 import cz.cvut.fel.adaptivestructure.states.FabricState;
 import cz.cvut.fel.adaptivestructure.states.State;
@@ -40,7 +51,15 @@ public class AdaptationMaker implements Detector.ImageListener {
     private ASDatabase db;
     private Context context;
 
-    public void start(Context context, SurfaceView cameraPreview){
+    public void adapt(Context context, SurfaceView cameraPreview, View view){
+        this.start(context, cameraPreview);
+        this.createApplicationStructure(view);
+        //db.nodeDao().deleteAll();
+        createNewViews(view);
+        move(view);
+    }
+
+    private void start(Context context, SurfaceView cameraPreview){
         this.context = context;
         this.cameraPreview = cameraPreview;
         this.cameraPreview.setAlpha(0);
@@ -54,10 +73,80 @@ public class AdaptationMaker implements Detector.ImageListener {
         return instance;
     }
 
-    public void createApplicationStructure(View view, int parent) {
+    private void createApplicationStructure(View view) {
         db = DatabaseInit.getASDatabase(context);
-        root = createNode(view.getId(), view.getTransitionName(), parent);// todo right
-        currentNode = root;
+        long parent = -1;
+        if(currentNode!=null && currentNode.getUid() != view.getId()){
+            parent = currentNode.getUid();
+        }
+        currentNode = createNode(view.getId(), view.getResources().getResourceEntryName(view.getId()), parent);// todo right
+        if(currentNode.getParent() == -1){
+            root = currentNode;
+        }
+    }
+
+    private void createNewViews(View view){
+        ViewGroup layoutFromView = getLayoutFromView(view);
+        Node byId = db.nodeDao().getById(view.getId());
+        List<View> toCreate = byId.getToCreate();
+        if(toCreate != null && toCreate.size()!=0) {
+            for (View newView : toCreate) {
+                layoutFromView.addView(newView);
+            }
+        }
+    }
+
+    private ViewGroup getLayoutFromView(View view){
+        if(view instanceof ViewGroup){
+            ViewGroup viewGroup = (ViewGroup) view;
+            for (int i = 0; i<viewGroup.getChildCount();i++) {
+                View childAt = viewGroup.getChildAt(i);
+                if(childAt instanceof ViewGroup){
+                    ViewGroup bottom = (ViewGroup) childAt;
+                    if(bottom.getChildCount()!=0){
+                        return bottom;
+                    }
+                }
+            }
+            return viewGroup;
+        }
+        throw new IllegalArgumentException("No ViewGroup found!");
+    }
+
+    private void addToList(View view, Node node){
+        List<View> toMove = node.getToCreate();
+        if(toMove==null){
+            toMove = new LinkedList<>();
+        }
+        toMove.add(view);
+        node.setToCreate(toMove);
+        db.nodeDao().update(node);
+    }
+
+    private void removeFromList(long id, List<MovedView> movedViews){
+        for(MovedView movedView : movedViews){
+            if(movedView.getUid()==id){
+                movedViews.remove(movedView);
+                break;
+            }
+        }
+    }
+
+    private void moveToParent(List<View> views){
+        Node byId = db.nodeDao().getById(currentNode.getParent());
+        if(byId!=null) {
+            for (View view : views) {
+                addToList(view, byId);
+            }
+        }
+    }
+
+    private void move(View view){
+        //
+        int id = view.getId();
+        if(id==2131230725) { // todo
+            this.moveToParent(getAllViews(view));
+        }
     }
 
     private Node createNode(long uid, String name, long parent) {
@@ -146,5 +235,28 @@ public class AdaptationMaker implements Detector.ImageListener {
         if(detector != null && detector.isRunning()) {
             detector.stop();
         }
+    }
+
+    private List<View> getAllViews(View view){
+        if(view instanceof ViewGroup) {
+            ViewGroup layout = (ViewGroup) view;
+            List<View> views = new ArrayList<>();
+            for (int i = 0; i < layout.getChildCount(); i++) {
+                View childAt = layout.getChildAt(i);
+                List<View> allViews = getAllViews(childAt);
+                if(allViews == null || allViews.size()==0){
+                    if(childAt.getTag()!=null) {
+                        String redirect = (String) childAt.getTag();
+                        if(redirect.equals("redirect")) {
+                            views.add(childAt);
+                        }
+                    }
+                } else {
+                    views.addAll(allViews);
+                }
+            }
+            return views;
+        }
+        return null;
     }
 }

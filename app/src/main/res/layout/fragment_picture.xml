@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".fragments.PictureFragment"
-    android:id="@+id/parentLayout">
+    android:id="@+id/PictureFragment">
 
     <TextView
         android:id="@+id/pictures_text"

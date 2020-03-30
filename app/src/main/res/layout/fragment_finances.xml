@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".fragments.FinancesFragment"
-    android:id="@+id/parentLayout">
+    android:id="@+id/FinancesFragment">
 
     <!-- TODO: Update blank fragment layout -->
     <LinearLayout
@@ -23,5 +23,12 @@
             android:layout_height="1px"
             android:layout_marginTop="10dp"
             android:id="@+id/surfaceViewFinances" />
+
+        <Button
+            android:id="@+id/buttonNext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ButtonNext"
+            android:tag="redirect"/>
     </LinearLayout>
 </FrameLayout>

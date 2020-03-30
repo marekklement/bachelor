@@ -9,7 +9,7 @@ public class DatabaseInit {
 
     public static ASDatabase getASDatabase(Context context) {
         if (database == null) {
-            database = Room.databaseBuilder(context, ASDatabase.class, "as_db").allowMainThreadQueries().build();
+            database = Room.databaseBuilder(context, ASDatabase.class, "as_db").allowMainThreadQueries().fallbackToDestructiveMigration().build();
         }
         return database;
     }

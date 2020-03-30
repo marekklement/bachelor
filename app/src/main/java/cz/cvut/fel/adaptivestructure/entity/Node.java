@@ -1,8 +1,14 @@
 package cz.cvut.fel.adaptivestructure.entity;
 
+import android.view.View;
+
+import java.util.List;
+
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
+import cz.cvut.fel.adaptivestructure.converter.DataConverter;
 
 @Entity
 public class Node {
@@ -14,6 +20,12 @@ public class Node {
 
     @ColumnInfo(name = "parent")
     private long parent;
+
+    //node changes
+    @TypeConverters(DataConverter.class)
+    private List<View> toDelete;
+    @TypeConverters(DataConverter.class)
+    private List<View> toCreate;
 
     // node info
     @ColumnInfo(name = "state_changing", defaultValue = "0")
@@ -41,6 +53,22 @@ public class Node {
     private long sadnessWeight;
     @ColumnInfo(name = "anger_weight", defaultValue = "0")
     private long angerWeight;
+
+    public List<View> getToDelete() {
+        return toDelete;
+    }
+
+    public void setToDelete(List<View> toDelete) {
+        this.toDelete = toDelete;
+    }
+
+    public List<View> getToCreate() {
+        return toCreate;
+    }
+
+    public void setToCreate(List<View> toCreate) {
+        this.toCreate = toCreate;
+    }
 
     public long getUid() {
         return uid;

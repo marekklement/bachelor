@@ -62,13 +62,6 @@ public class MainFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onResume() {
         super.onResume();
-        adaptationMaker.start(getContext(), surfaceView);
-        adaptationMaker.createApplicationStructure(getView(), 0);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        adaptationMaker.stop();
+        adaptationMaker.adapt(getContext(), surfaceView, getView());
     }
 }

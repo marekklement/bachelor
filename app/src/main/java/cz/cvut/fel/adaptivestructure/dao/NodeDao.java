@@ -23,6 +23,9 @@ public interface NodeDao {
     @Query("SELECT * FROM node WHERE name LIKE :name")
     Node findByName(String name);
 
+    @Query("DELETE FROM node")
+    void deleteAll();
+
     @Insert
     void insertAll(Node... nodes);
 
