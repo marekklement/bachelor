@@ -40,7 +40,7 @@ public class PictureFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        adaptationMaker.adapt(getContext(), surfaceView, getView());
+        adaptationMaker.adapt(getContext(), surfaceView, getView(), R.layout.fragment_main);
     }
 
 }

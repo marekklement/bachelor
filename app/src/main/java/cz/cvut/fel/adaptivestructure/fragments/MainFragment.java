@@ -17,6 +17,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import cz.cvut.fel.adaptivestructure.R;
 import cz.cvut.fel.adaptivestructure.adaptation.AdaptationMaker;
+import cz.cvut.fel.adaptivestructure.inflanter.DynamicLayoutInflator;
 
 public class MainFragment extends Fragment implements View.OnClickListener {
 
@@ -65,6 +66,6 @@ public class MainFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onResume() {
         super.onResume();
-        adaptationMaker.adapt(getContext(), surfaceView, getView());
+        adaptationMaker.adapt(getContext(), surfaceView, getView(), -1);
     }
 }
