@@ -1,7 +1,5 @@
 package cz.cvut.fel.adaptivestructure.entity;
 
-import android.view.View;
-
 import java.util.List;
 
 import androidx.room.ColumnInfo;
@@ -23,9 +21,11 @@ public class Node {
 
     //node changes
     @TypeConverters(DataConverter.class)
-    private List<View> toDelete;
+    @ColumnInfo(name = "to_delete")
+    private List<MovedView> toBeDeleted;
     @TypeConverters(DataConverter.class)
-    private List<View> toCreate;
+    @ColumnInfo(name = "to_create")
+    private List<MovedView> toBeCreated;
 
     // node info
     @ColumnInfo(name = "state_changing", defaultValue = "0")
@@ -54,20 +54,20 @@ public class Node {
     @ColumnInfo(name = "anger_weight", defaultValue = "0")
     private long angerWeight;
 
-    public List<View> getToDelete() {
-        return toDelete;
+    public List<MovedView> getToBeDeleted() {
+        return toBeDeleted;
     }
 
-    public void setToDelete(List<View> toDelete) {
-        this.toDelete = toDelete;
+    public void setToBeDeleted(List<MovedView> toBeDeleted) {
+        this.toBeDeleted = toBeDeleted;
     }
 
-    public List<View> getToCreate() {
-        return toCreate;
+    public List<MovedView> getToBeCreated() {
+        return toBeCreated;
     }
 
-    public void setToCreate(List<View> toCreate) {
-        this.toCreate = toCreate;
+    public void setToBeCreated(List<MovedView> toBeCreated) {
+        this.toBeCreated = toBeCreated;
     }
 
     public long getUid() {

@@ -9,27 +9,26 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import androidx.room.TypeConverter;
-import cz.cvut.fel.adaptivestructure.entity.MovedView;
 
-public class DataConverter {
+public class ViewConverter {
 
     @TypeConverter
-    public String fromMovedViewList(List<MovedView> movedViews) {
+    public String fromMovedViewList(List<View> movedViews) {
         if (movedViews == null) {
             return (null);
         }
         Gson gson = new Gson();
-        Type type = new TypeToken<List<MovedView>>() {}.getType();
+        Type type = new TypeToken<List<View>>() {}.getType();
         return gson.toJson(movedViews, type);
     }
 
     @TypeConverter
-    public List<MovedView> toMovedViewList(String movedViewsString) {
+    public List<View> toMovedViewList(String movedViewsString) {
         if (movedViewsString == null) {
             return (null);
         }
         Gson gson = new Gson();
-        Type type = new TypeToken<List<MovedView>>() {}.getType();
+        Type type = new TypeToken<List<View>>() {}.getType();
         return gson.fromJson(movedViewsString, type);
     }
 }

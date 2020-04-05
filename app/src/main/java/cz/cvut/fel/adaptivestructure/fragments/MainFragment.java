@@ -47,12 +47,15 @@ public class MainFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        switch (Objects.requireNonNull(v).getId()) {
+        int id = Objects.requireNonNull(v).getId();
+        Bundle bundle = new Bundle();
+        bundle.putInt("id",id);
+        switch (id) {
             case R.id.finances:
-                Objects.requireNonNull(navController).navigate(R.id.action_mainFragment_to_financesFragment);
+                Objects.requireNonNull(navController).navigate(R.id.action_mainFragment_to_financesFragment, bundle);
                 break;
             case R.id.pictures:
-                Objects.requireNonNull(navController).navigate(R.id.action_mainFragment_to_pictureFragment);
+                Objects.requireNonNull(navController).navigate(R.id.action_mainFragment_to_pictureFragment, bundle);
                 break;
             default:
                 throw new IllegalArgumentException("None ID recognized!");

@@ -2,6 +2,7 @@ package cz.cvut.fel.adaptivestructure.adaptation;
 
 import android.content.Context;
 import android.text.Layout;
+import android.view.LayoutInflater;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,6 +44,9 @@ public class AdaptationMaker implements Detector.ImageListener {
     private State currentState = null;
     private CompositeState states;
 
+    private ViewGroup currentLayout;
+    private int wayHere;
+
     // this node is root for all childes
     private Node root;
     // node for sub-nodes, starts with root
@@ -51,12 +55,22 @@ public class AdaptationMaker implements Detector.ImageListener {
     private ASDatabase db;
     private Context context;
 
-    public void adapt(Context context, SurfaceView cameraPreview, View view){
+    public void adapt(Context context, SurfaceView cameraPreview, View view, int id){
+        this.wayHere = id;
+        saveCurrentView(view);
         this.start(context, cameraPreview);
         this.createApplicationStructure(view);
         //db.nodeDao().deleteAll();
         createNewViews(view);
         move(view);
+    }
+
+    private void saveCurrentView(View view){
+        if(view instanceof ViewGroup){
+            currentLayout = (ViewGroup) view;
+        } else {
+            throw new IllegalArgumentException("View is not type layout");
+        }
     }
 
     private void start(Context context, SurfaceView cameraPreview){
@@ -85,15 +99,48 @@ public class AdaptationMaker implements Detector.ImageListener {
         }
     }
 
+    private void removeOldViews(View view){
+        ViewGroup layoutFromView = getLayoutFromView(view);
+        Node byId = db.nodeDao().getById(view.getId());
+        if(byId == null){
+            return;
+        }
+        List<MovedView> toBeDeleted = byId.getToBeDeleted();
+        if(toBeDeleted != null && toBeDeleted.size()!=0) {
+            for (MovedView removeView : toBeDeleted) {
+
+            }
+        }
+    }
+
     private void createNewViews(View view){
         ViewGroup layoutFromView = getLayoutFromView(view);
         Node byId = db.nodeDao().getById(view.getId());
-        List<View> toCreate = byId.getToCreate();
+        if(byId == null){
+            return;
+        }
+        List<MovedView> toCreate = byId.getToBeCreated();
         if(toCreate != null && toCreate.size()!=0) {
-            for (View newView : toCreate) {
-                layoutFromView.addView(newView);
+            for (MovedView newView : toCreate) {
+                layoutFromView.addView(createNewView(newView));
             }
         }
+    }
+
+    private View createNewView(MovedView movedView){
+        Button component = new Button(context);
+        component.setId(movedView.getUid());
+        component.setText(movedView.getName());
+        component.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(v.getId()==component.getId()){
+
+                }
+            }
+        });
+
+        return component;
     }
 
     private ViewGroup getLayoutFromView(View view){
@@ -114,12 +161,23 @@ public class AdaptationMaker implements Detector.ImageListener {
     }
 
     private void addToList(View view, Node node){
-        List<View> toMove = node.getToCreate();
+        List<MovedView> toMove = node.getToBeCreated();
         if(toMove==null){
             toMove = new LinkedList<>();
         }
-        toMove.add(view);
-        node.setToCreate(toMove);
+        Button but;
+        if(view instanceof Button){
+            but = (Button) view;
+        } else {
+            throw new IllegalArgumentException("View is not a button!");
+        }
+        MovedView movedView = new MovedView();
+        movedView.setType(view.getClass().getName());
+        movedView.setUid(view.getId());
+        movedView.setLayoutId(currentLayout.getId());
+        movedView.setName(but.getText().toString());
+        toMove.add(movedView);
+        node.setToBeCreated(toMove);
         db.nodeDao().update(node);
     }
 
@@ -135,10 +193,22 @@ public class AdaptationMaker implements Detector.ImageListener {
     private void moveToParent(List<View> views){
         Node byId = db.nodeDao().getById(currentNode.getParent());
         if(byId!=null) {
+            addToRemove(byId);
             for (View view : views) {
                 addToList(view, byId);
             }
         }
+    }
+
+    private void addToRemove(Node node) {
+        List<MovedView> toMove = node.getToBeDeleted();
+        if(toMove==null){
+            toMove = new LinkedList<>();
+        }
+        MovedView movedView = new MovedView();
+        movedView.setUid(wayHere);
+        node.setToBeDeleted(toMove);
+        db.nodeDao().update(node);
     }
 
     private void move(View view){

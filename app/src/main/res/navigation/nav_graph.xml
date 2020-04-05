@@ -11,10 +11,20 @@
         tools:layout="@layout/fragment_main" >
         <action
             android:id="@+id/action_mainFragment_to_pictureFragment"
-            app:destination="@id/pictureFragment" />
+            app:destination="@id/pictureFragment" >
+            <argument
+                android:name="parentComponentID"
+                app:argType="integer"
+                android:defaultValue="1" />
+        </action>
         <action
             android:id="@+id/action_mainFragment_to_financesFragment"
-            app:destination="@id/financesFragment" />
+            app:destination="@id/financesFragment">
+            <argument
+                android:name="parentComponentID"
+                app:argType="integer"
+                android:defaultValue="1" />
+        </action>
     </fragment>
     <fragment
         android:id="@+id/financesFragment"
