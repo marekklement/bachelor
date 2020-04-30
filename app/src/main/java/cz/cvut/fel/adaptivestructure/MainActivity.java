@@ -1,36 +1,36 @@
 package cz.cvut.fel.adaptivestructure;
 
 import android.os.Bundle;
-import android.view.View;
-import android.widget.RelativeLayout;
-
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+import android.view.SurfaceView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import cz.cvut.fel.adaptivestructure.inflanter.DynamicLayoutInflator;
-import cz.cvut.fel.adaptivestructure.xml.XMLMaker;
+import cz.cvut.fel.adaptivestructure.adaptation.AdaptationMaker;
+import cz.cvut.fel.adaptivestructure.adaptation.MoveMaker;
 
 public class MainActivity extends AppCompatActivity {
+
+    public SurfaceView surfaceView;
+    AdaptationMaker adaptationMaker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main2);
-        List<String> buttons = new LinkedList<>();
-        buttons.add("bla");
-        buttons.add("bol");
-        try {
-            String s = XMLMaker.generateXML("testLayout", "NewBeginFragment", buttons);
-            View view = DynamicLayoutInflator.inflateName(this, "testLayout");
-            setContentView(view);
-            String str = "";
-        } catch (IOException e) {
-            //throw new IllegalArgumentException(e);
-            //e.printStackTrace();
-        }
+        surfaceView = new SurfaceView(this);
+        surfaceView.getHolder().setFixedSize(1,1);
+        //DatabaseInit.getASDatabase(this).nodeDao().deleteAll();
+        setContentView(R.layout.activity_main);
+        adaptationMaker = AdaptationMaker.getAdaptationMaker();
+        MoveMaker.makeMove(this, surfaceView);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        adaptationMaker.adapt(this, surfaceView, MoveMaker.getInstance().currentView, -1, MoveMaker.getInstance().currentViewName);
+    }
 
+    @Override
+    public void onBackPressed() {
+        MoveMaker.getInstance().setBackClickListeners(this);
+    }
 }

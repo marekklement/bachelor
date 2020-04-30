@@ -49,16 +49,15 @@ public class XMLMaker {
                 serializer.attribute("", "android:id", "@+id/" + button);
                 serializer.endTag("", "Button");
             }
-            serializer.startTag("", "SurfaceView");
-            serializer.attribute("", "android:layout_width", "1px");
-            serializer.attribute("", "android:layout_height", "1px");
-            serializer.attribute("", "android:layout_marginTop", "10dp");
-            serializer.attribute("", "android:id", "@+id/surfaceview");
-            serializer.endTag("", "SurfaceView");
+//            serializer.startTag("", "SurfaceView");
+//            serializer.attribute("", "android:layout_width", "1px");
+//            serializer.attribute("", "android:layout_height", "1px");
+//            serializer.attribute("", "android:layout_marginTop", "10dp");
+//            serializer.attribute("", "android:id", "@+id/surfaceview");
+//            serializer.endTag("", "SurfaceView");
             serializer.endTag("", "LinearLayout");
             serializer.endTag("", "FrameLayout");
             serializer.endDocument();
-            String fuck = "sss";
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {

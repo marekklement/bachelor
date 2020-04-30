@@ -21,6 +21,9 @@ public interface NodeDao {
     Node getById(long id);
 
     @Query("SELECT * FROM node WHERE name LIKE :name")
+    List<Node> getByName(String name);
+
+    @Query("SELECT * FROM node WHERE name LIKE :name")
     Node findByName(String name);
 
     @Query("DELETE FROM node")

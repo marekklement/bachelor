@@ -6,26 +6,21 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
-import cz.cvut.fel.adaptivestructure.converter.DataConverter;
+import cz.cvut.fel.adaptivestructure.converter.ListStringConverter;
 
 @Entity
 public class Node {
     @PrimaryKey
-    private long uid;
+    private int uid;
 
     @ColumnInfo(name = "name")
     private String name;
 
     @ColumnInfo(name = "parent")
-    private long parent;
+    private int parent;
 
-    //node changes
-    @TypeConverters(DataConverter.class)
-    @ColumnInfo(name = "to_delete")
-    private List<MovedView> toBeDeleted;
-    @TypeConverters(DataConverter.class)
-    @ColumnInfo(name = "to_create")
-    private List<MovedView> toBeCreated;
+    @TypeConverters(ListStringConverter.class)
+    private List<String> buttons;
 
     // node info
     @ColumnInfo(name = "state_changing", defaultValue = "0")
@@ -54,27 +49,19 @@ public class Node {
     @ColumnInfo(name = "anger_weight", defaultValue = "0")
     private long angerWeight;
 
-    public List<MovedView> getToBeDeleted() {
-        return toBeDeleted;
+    public List<String> getButtons() {
+        return buttons;
     }
 
-    public void setToBeDeleted(List<MovedView> toBeDeleted) {
-        this.toBeDeleted = toBeDeleted;
+    public void setButtons(List<String> buttons) {
+        this.buttons = buttons;
     }
 
-    public List<MovedView> getToBeCreated() {
-        return toBeCreated;
-    }
-
-    public void setToBeCreated(List<MovedView> toBeCreated) {
-        this.toBeCreated = toBeCreated;
-    }
-
-    public long getUid() {
+    public int getUid() {
         return uid;
     }
 
-    public void setUid(long uid) {
+    public void setUid(int uid) {
         this.uid = uid;
     }
 
@@ -86,11 +73,11 @@ public class Node {
         this.name = name;
     }
 
-    public long getParent() {
+    public int getParent() {
         return parent;
     }
 
-    public void setParent(long parent) {
+    public void setParent(int parent) {
         this.parent = parent;
     }
 
