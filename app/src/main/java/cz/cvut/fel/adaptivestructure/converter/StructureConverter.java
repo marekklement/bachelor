@@ -23,7 +23,7 @@ public class StructureConverter {
     }
 
     @TypeConverter
-    public List<String> toStructure(String structure) {
+    public List<Pair<String, List<String>>> toStructure(String structure) {
         if (structure == null) {
             return (null);
         }

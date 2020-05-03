@@ -13,10 +13,9 @@ import cz.cvut.fel.adaptivestructure.converter.StructureConverter;
 @Entity
 public class Structure {
 
+    @PrimaryKey
     @ColumnInfo(name = "version")
     private int version;
-    @PrimaryKey
-    private int id;
     @TypeConverters(StructureConverter.class)
     List<Pair<String, List<String>>> pages;
 
@@ -26,14 +25,6 @@ public class Structure {
 
     public void setVersion(int version) {
         this.version = version;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public List<Pair<String, List<String>>> getPages() {

@@ -1,7 +1,8 @@
 package cz.cvut.fel.adaptivestructure.adaptation;
 
 import android.app.Activity;
-import android.content.Context;
+import android.os.Build;
+import android.util.Pair;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,13 +10,15 @@ import android.view.ViewParent;
 import android.widget.Button;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import cz.cvut.fel.adaptivestructure.MainActivity;
+import androidx.annotation.RequiresApi;
+import cz.cvut.fel.adaptivestructure.creation.StructureCreation;
 import cz.cvut.fel.adaptivestructure.database.ASDatabase;
 import cz.cvut.fel.adaptivestructure.database.DatabaseInit;
 import cz.cvut.fel.adaptivestructure.entity.Node;
+import cz.cvut.fel.adaptivestructure.entity.Structure;
 import cz.cvut.fel.adaptivestructure.inflanter.DynamicLayoutInflator;
 import cz.cvut.fel.adaptivestructure.xml.XMLMaker;
 
@@ -58,7 +61,7 @@ public class MoveMaker {
         if (viewName != null) {
             currentViewName = viewName;
         } else {
-            currentViewName = "MainView";
+            currentViewName = "mainPage";
         }
         List<Node> byIds = db.nodeDao().getByName(currentViewName);
         Node byId;
@@ -73,7 +76,6 @@ public class MoveMaker {
         try {
             String s = XMLMaker.generateXML(currentViewName, className, buttons);
             view = DynamicLayoutInflator.inflateName(context, currentViewName);
-            //setContentView(view);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -97,11 +99,18 @@ public class MoveMaker {
                 if (childAt instanceof Button) {
                     Button button = (Button) childAt;
                     button.setOnClickListener(new View.OnClickListener() {
+                        @RequiresApi(api = Build.VERSION_CODES.N)
                         @Override
                         public void onClick(View v) {
                             if (v instanceof Button) {
                                 Button b = (Button) v;
-                                View move = MoveMaker.getInstance().move(context, new LinkedList<>(), this.getClass().getSimpleName(), b.getText().toString());
+                                List<Pair<String, List<String>>> collect = StructureCreation.getOrMakeStructure(context).getPages().stream().filter(l -> l.first.equals(b.getText().toString())).collect(Collectors.toList());
+                                if(collect.size()==0){
+                                    throw new IllegalArgumentException("page with name '" + b.getText().toString() + "' does not exist.");
+                                } else if(collect.size()!=1){
+                                    throw new IllegalArgumentException("page with name " + b.getText().toString() + " is duplicate.");
+                                }
+                                View move = MoveMaker.getInstance().move(context, collect.get(0).second, this.getClass().getSimpleName(), collect.get(0).first);
                                 ViewGroup vg = (ViewGroup) move;
                                 SurfaceView surfaceView = MoveMaker.getSurfaceViewFromView(context.getWindow().getDecorView().getRootView());
                                 ViewParent parent = surfaceView.getParent();
@@ -136,20 +145,21 @@ public class MoveMaker {
         pv.removeView(surfaceView);
         vg.addView(surfaceView);
         context.setContentView(vg);
-        //context.surfaceView = MoveMaker.getSurfaceViewFromView(move);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public static void makeMove(Activity activity, SurfaceView surfaceView){
         if (MoveMaker.getInstance().nextView == null) {
-            List<String> buttons = new LinkedList<>();
-            buttons.add("bla");
-            buttons.add("bol");
-            View move = MoveMaker.getInstance().move(activity, buttons, activity.getClass().getSimpleName(), null);
+            Structure structure = StructureCreation.getOrMakeStructure(activity);
+            List<Pair<String, List<String>>> mainPage = structure.getPages().stream().filter(l -> l.first.equals("mainPage")).collect(Collectors.toList());
+            if(mainPage.size()!=1){
+                throw new IllegalArgumentException("There should be at least one page with name mainPage!");
+            }
+            View move = MoveMaker.getInstance().move(activity, mainPage.get(0).second, activity.getClass().getSimpleName(),  mainPage.get(0).first);
             ViewGroup vg = (ViewGroup) move;
             vg.addView(surfaceView);
             activity.setContentView(vg);
             MoveMaker.getInstance().currentView = move;
-            //surfaceView = MoveMaker.getSurfaceViewFromView(move);
         }
     }
 }
