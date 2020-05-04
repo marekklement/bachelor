@@ -19,6 +19,9 @@ public class Node {
     @ColumnInfo(name = "parent")
     private int parent;
 
+    @ColumnInfo(name = "version")
+    private int version;
+
     @TypeConverters(ListStringConverter.class)
     private List<String> buttons;
 
@@ -48,6 +51,14 @@ public class Node {
     private long sadnessWeight;
     @ColumnInfo(name = "anger_weight", defaultValue = "0")
     private long angerWeight;
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
 
     public List<String> getButtons() {
         return buttons;

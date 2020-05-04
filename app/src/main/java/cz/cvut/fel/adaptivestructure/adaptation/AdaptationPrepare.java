@@ -21,9 +21,9 @@ import cz.cvut.fel.adaptivestructure.states.FabricState;
 import cz.cvut.fel.adaptivestructure.states.State;
 import cz.cvut.fel.adaptivestructure.utils.StateAdapter;
 
-public class AdaptationMaker implements Detector.ImageListener {
+public class AdaptationPrepare implements Detector.ImageListener {
 
-    private static AdaptationMaker instance = null;
+    private static AdaptationPrepare instance = null;
     private static int id = 1;
     private final int detectorRate = 10; //  number of video frames processed per second: the greater the rate, the more CPU intensive the processing is
     private final String NEUTRAL_STATE = "NEUTRAL";
@@ -45,8 +45,8 @@ public class AdaptationMaker implements Detector.ImageListener {
     private ASDatabase db;
     private Context context;
 
-    public static AdaptationMaker getAdaptationMaker() {
-        if (instance == null) instance = new AdaptationMaker();
+    public static AdaptationPrepare getAdaptationMaker() {
+        if (instance == null) instance = new AdaptationPrepare();
         return instance;
     }
 
@@ -93,6 +93,7 @@ public class AdaptationMaker implements Detector.ImageListener {
             node.setName(name);
             node.setParent(parent);
             node.setButtons(buttons);
+            node.setVersion(1);
             // init all emotions todo
             //
             db.nodeDao().insert(node);

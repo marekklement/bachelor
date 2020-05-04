@@ -1,60 +1,55 @@
 package cz.cvut.fel.adaptivestructure.creation;
 
 import android.content.Context;
-import android.util.Pair;
+import android.os.Build;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import androidx.annotation.RequiresApi;
 import cz.cvut.fel.adaptivestructure.database.DatabaseInit;
 import cz.cvut.fel.adaptivestructure.entity.Structure;
 
 public class StructureCreation {
 
-    private static List<Pair<String, List<String>>> createStructure(){
-        List<Pair<String, List<String>>> pairs = new LinkedList<>();
+    private static HashMap<String, List<String>> createStructure(){
+        HashMap<String, List<String>> pairs = new HashMap<>();
         List<String> buttons = new LinkedList<>();
         buttons.add("bla");
         buttons.add("bol");
-        Pair<String, List<String>> mainPage = new Pair<>("mainPage", buttons);
-        pairs.add(mainPage);
+        pairs.put("mainPage", buttons);
         //
         List<String> blaButtons = new LinkedList<>();
         blaButtons.add("next");
         blaButtons.add("newOne");
-        Pair<String, List<String>> blaPage = new Pair<>("bla", blaButtons);
-        pairs.add(blaPage);
+        pairs.put("bla", blaButtons);
         //
         List<String> bolButtons = new LinkedList<>();
         bolButtons.add("end");
         bolButtons.add("notEnd");
-        Pair<String, List<String>> bolPage = new Pair<>("bol", bolButtons);
-        pairs.add(bolPage);
+        pairs.put("bol", bolButtons);
         //
         List<String> notEndButtons = new LinkedList<>();
         notEndButtons.add("last");
-        Pair<String, List<String>> notEndPage = new Pair<>("notEnd", notEndButtons);
-        pairs.add(notEndPage);
+        pairs.put("notEnd", notEndButtons);
         //
-        Pair<String, List<String>> endPage = new Pair<>("end", new LinkedList<>());
-        pairs.add(endPage);
+        pairs.put("end", new LinkedList<>());
         //
-        Pair<String, List<String>> nextPage = new Pair<>("next", new LinkedList<>());
-        pairs.add(nextPage);
+        pairs.put("next", new LinkedList<>());
         //
-        Pair<String, List<String>> newOnePage = new Pair<>("newOne", new LinkedList<>());
-        pairs.add(newOnePage);
+        pairs.put("newOne", new LinkedList<>());
         //
-        Pair<String, List<String>> lastPage = new Pair<>("last", new LinkedList<>());
-        pairs.add(lastPage);
+        pairs.put("last", new LinkedList<>());
         //
         return pairs;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public static Structure getOrMakeStructure(Context context){
         Structure highestVersion = DatabaseInit.getASDatabase(context).structureDao().getHighestVersion();
         if(highestVersion==null){
-            List<Pair<String, List<String>>> structure = createStructure();
+            HashMap<String, List<String>> structure = createStructure();
             Structure struc = new Structure();
             struc.setVersion(1);
             struc.setPages(structure);

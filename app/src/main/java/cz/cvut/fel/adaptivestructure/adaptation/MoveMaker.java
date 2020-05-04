@@ -85,7 +85,7 @@ public class MoveMaker {
         } else {
             view.setId(byId.getUid());
         }
-        AdaptationMaker.getAdaptationMaker().createApplicationStructure(view, currentViewName, buttons);
+        AdaptationPrepare.getAdaptationMaker().createApplicationStructure(view, currentViewName, buttons);
         nextView = view;
         MoveMaker.getInstance().setOnClickListeners(view, context);
         return view;
@@ -104,13 +104,12 @@ public class MoveMaker {
                         public void onClick(View v) {
                             if (v instanceof Button) {
                                 Button b = (Button) v;
-                                List<Pair<String, List<String>>> collect = StructureCreation.getOrMakeStructure(context).getPages().stream().filter(l -> l.first.equals(b.getText().toString())).collect(Collectors.toList());
-                                if(collect.size()==0){
-                                    throw new IllegalArgumentException("page with name '" + b.getText().toString() + "' does not exist.");
-                                } else if(collect.size()!=1){
-                                    throw new IllegalArgumentException("page with name " + b.getText().toString() + " is duplicate.");
+                                List<String> collect = StructureCreation.getOrMakeStructure(context).getPages().get(b.getText().toString());
+                                //List<Pair<String, List<String>>> collect = StructureCreation.getOrMakeStructure(context).getPages().stream().filter(l -> l.first.equals(b.getText().toString())).collect(Collectors.toList());
+                                if(collect == null){
+                                    throw new IllegalArgumentException("Page with name '" + b.getText().toString() + "' does not exist.");
                                 }
-                                View move = MoveMaker.getInstance().move(context, collect.get(0).second, this.getClass().getSimpleName(), collect.get(0).first);
+                                View move = MoveMaker.getInstance().move(context, collect, this.getClass().getSimpleName(), b.getText().toString());
                                 ViewGroup vg = (ViewGroup) move;
                                 SurfaceView surfaceView = MoveMaker.getSurfaceViewFromView(context.getWindow().getDecorView().getRootView());
                                 ViewParent parent = surfaceView.getParent();
@@ -132,30 +131,36 @@ public class MoveMaker {
     public void setBackClickListeners(Activity context) {
         List<Node> byName = db.nodeDao().getByName(currentViewName);
         if (byName.size() != 1) {
+            // todo kdyz nejsou na dane strance emoce pak se nevytvori uzel
             throw new IllegalArgumentException("Should be just one!");
         }
         Node node = byName.get(0);
         long parent = node.getParent();
-        Node byId = db.nodeDao().getById(parent);
-        View move = MoveMaker.getInstance().move(context, byId.getButtons(), this.getClass().getSimpleName(), byId.getName());
-        ViewGroup vg = (ViewGroup) move;
-        SurfaceView surfaceView = MoveMaker.getSurfaceViewFromView(context.getWindow().getDecorView().getRootView());
-        ViewParent parentView = surfaceView.getParent();
-        ViewGroup pv = (ViewGroup) parentView;
-        pv.removeView(surfaceView);
-        vg.addView(surfaceView);
-        context.setContentView(vg);
+        if(parent != -1) {
+            Node byId = db.nodeDao().getById(parent);
+            View move = MoveMaker.getInstance().move(context, byId.getButtons(), this.getClass().getSimpleName(), byId.getName());
+            ViewGroup vg = (ViewGroup) move;
+            SurfaceView surfaceView = MoveMaker.getSurfaceViewFromView(context.getWindow().getDecorView().getRootView());
+            ViewParent parentView = surfaceView.getParent();
+            ViewGroup pv = (ViewGroup) parentView;
+            pv.removeView(surfaceView);
+            vg.addView(surfaceView);
+            context.setContentView(vg);
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public static void makeMove(Activity activity, SurfaceView surfaceView){
         if (MoveMaker.getInstance().nextView == null) {
+            AdaptationProvider ap = new AdaptationProvider(activity);
+            ap.changeStructure();
             Structure structure = StructureCreation.getOrMakeStructure(activity);
-            List<Pair<String, List<String>>> mainPage = structure.getPages().stream().filter(l -> l.first.equals("mainPage")).collect(Collectors.toList());
-            if(mainPage.size()!=1){
+            List<String> mainPage = structure.getPages().get("mainPage");
+            //List<Pair<String, List<String>>> mainPage = structure.getPages().stream().filter(l -> l.first.equals("mainPage")).collect(Collectors.toList());
+            if(mainPage == null){
                 throw new IllegalArgumentException("There should be at least one page with name mainPage!");
             }
-            View move = MoveMaker.getInstance().move(activity, mainPage.get(0).second, activity.getClass().getSimpleName(),  mainPage.get(0).first);
+            View move = MoveMaker.getInstance().move(activity, mainPage, activity.getClass().getSimpleName(),  "mainPage");
             ViewGroup vg = (ViewGroup) move;
             vg.addView(surfaceView);
             activity.setContentView(vg);

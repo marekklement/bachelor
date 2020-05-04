@@ -2,6 +2,7 @@ package cz.cvut.fel.adaptivestructure.entity;
 
 import android.util.Pair;
 
+import java.util.HashMap;
 import java.util.List;
 
 import androidx.room.ColumnInfo;
@@ -17,7 +18,8 @@ public class Structure {
     @ColumnInfo(name = "version")
     private int version;
     @TypeConverters(StructureConverter.class)
-    List<Pair<String, List<String>>> pages;
+    HashMap<String, List<String>> pages;
+    //List<Pair<String, List<String>>> pages;
 
     public int getVersion() {
         return version;
@@ -27,11 +29,11 @@ public class Structure {
         this.version = version;
     }
 
-    public List<Pair<String, List<String>>> getPages() {
+    public HashMap<String, List<String>> getPages() {
         return pages;
     }
 
-    public void setPages(List<Pair<String, List<String>>> pages) {
+    public void setPages(HashMap<String, List<String>> pages) {
         this.pages = pages;
     }
 }
