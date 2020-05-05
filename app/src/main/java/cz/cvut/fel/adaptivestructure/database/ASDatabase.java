@@ -7,11 +7,18 @@ import cz.cvut.fel.adaptivestructure.dao.StructureDao;
 import cz.cvut.fel.adaptivestructure.entity.Node;
 import cz.cvut.fel.adaptivestructure.entity.Structure;
 
+/**
+ * Get tables
+ *
+ * @author Marek Klement
+ */
 @Database(entities = {Node.class, Structure.class}, version = 9)
 public abstract class ASDatabase extends RoomDatabase {
     public abstract NodeDao nodeDao();
+
     public abstract StructureDao structureDao();
-    public void cleanDatabase(){
+
+    public void cleanDatabase() {
         nodeDao().deleteAll();
         structureDao().deleteAll();
     }

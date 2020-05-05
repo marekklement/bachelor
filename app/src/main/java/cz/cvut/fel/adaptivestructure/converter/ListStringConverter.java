@@ -8,6 +8,11 @@ import java.util.List;
 
 import androidx.room.TypeConverter;
 
+/**
+ * List<String> cannot be saved to database without converting.
+ *
+ * @author Marek Klement
+ */
 public class ListStringConverter {
 
     @TypeConverter
@@ -16,7 +21,8 @@ public class ListStringConverter {
             return (null);
         }
         Gson gson = new Gson();
-        Type type = new TypeToken<List<String>>() {}.getType();
+        Type type = new TypeToken<List<String>>() {
+        }.getType();
         return gson.toJson(movedViews, type);
     }
 
@@ -26,7 +32,8 @@ public class ListStringConverter {
             return (null);
         }
         Gson gson = new Gson();
-        Type type = new TypeToken<List<String>>() {}.getType();
+        Type type = new TypeToken<List<String>>() {
+        }.getType();
         return gson.fromJson(movedViewsString, type);
     }
 }

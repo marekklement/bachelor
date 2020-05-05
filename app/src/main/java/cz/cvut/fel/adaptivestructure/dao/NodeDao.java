@@ -9,6 +9,11 @@ import androidx.room.Query;
 import androidx.room.Update;
 import cz.cvut.fel.adaptivestructure.entity.Node;
 
+/**
+ * DAO for querying nodes
+ *
+ * @author Marek Klement
+ */
 @Dao
 public interface NodeDao {
     @Query("SELECT * FROM node")

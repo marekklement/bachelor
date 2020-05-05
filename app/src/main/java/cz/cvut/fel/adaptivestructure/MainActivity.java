@@ -1,16 +1,30 @@
 package cz.cvut.fel.adaptivestructure;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.SurfaceView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import cz.cvut.fel.adaptivestructure.adaptation.AdaptationPrepare;
 import cz.cvut.fel.adaptivestructure.adaptation.MoveMaker;
 import cz.cvut.fel.adaptivestructure.database.DatabaseInit;
 
+/**
+ * Demo app activity.
+ *
+ * @author Marek Klement
+ */
 public class MainActivity extends AppCompatActivity {
+
+    private static final int CAMERA_PERMISSION_CODE = 100;
+    private static final int STORAGE_PERMISSION_CODE = 101;
 
     public SurfaceView surfaceView;
     AdaptationPrepare adaptationPrepare;
@@ -19,8 +33,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        checkPermission(
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                STORAGE_PERMISSION_CODE);
+        checkPermission(Manifest.permission.CAMERA,
+                CAMERA_PERMISSION_CODE);
         surfaceView = new SurfaceView(this);
-        surfaceView.getHolder().setFixedSize(1,1);
+        surfaceView.getHolder().setFixedSize(1, 1);
         // delete all to test
 //        DatabaseInit.getASDatabase(this).cleanDatabase();
         setContentView(R.layout.activity_main);
@@ -37,5 +56,70 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         MoveMaker.getInstance().setBackClickListeners(this);
+    }
+
+    public void checkPermission(String permission, int requestCode)
+    {
+
+        // Checking if permission is not granted
+        if (ContextCompat.checkSelfPermission(
+                MainActivity.this,
+                permission)
+                == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat
+                    .requestPermissions(
+                            MainActivity.this,
+                            new String[] { permission },
+                            requestCode);
+        }
+        else {
+            Toast
+                    .makeText(MainActivity.this,
+                            "Permission already granted",
+                            Toast.LENGTH_SHORT)
+                    .show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults)
+    {
+        super
+                .onRequestPermissionsResult(requestCode,
+                        permissions,
+                        grantResults);
+
+        if (requestCode == CAMERA_PERMISSION_CODE) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(MainActivity.this,
+                        "Camera Permission Granted",
+                        Toast.LENGTH_SHORT)
+                        .show();
+            }
+            else {
+                Toast.makeText(MainActivity.this,
+                        "Camera Permission Denied",
+                        Toast.LENGTH_SHORT)
+                        .show();
+            }
+        }
+        else if (requestCode == STORAGE_PERMISSION_CODE) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(MainActivity.this,
+                        "Storage Permission Granted",
+                        Toast.LENGTH_SHORT)
+                        .show();
+            }
+            else {
+                Toast.makeText(MainActivity.this,
+                        "Storage Permission Denied",
+                        Toast.LENGTH_SHORT)
+                        .show();
+            }
+        }
     }
 }

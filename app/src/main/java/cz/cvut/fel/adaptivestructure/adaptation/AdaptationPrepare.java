@@ -3,7 +3,6 @@ package cz.cvut.fel.adaptivestructure.adaptation;
 import android.content.Context;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewGroup;
 
 import com.affectiva.android.affdex.sdk.Frame;
 import com.affectiva.android.affdex.sdk.detector.CameraDetector;
@@ -16,30 +15,32 @@ import java.util.List;
 import cz.cvut.fel.adaptivestructure.database.ASDatabase;
 import cz.cvut.fel.adaptivestructure.database.DatabaseInit;
 import cz.cvut.fel.adaptivestructure.entity.Node;
+import cz.cvut.fel.adaptivestructure.properties.PropertyUtil;
 import cz.cvut.fel.adaptivestructure.states.CompositeState;
 import cz.cvut.fel.adaptivestructure.states.FabricState;
 import cz.cvut.fel.adaptivestructure.states.State;
 import cz.cvut.fel.adaptivestructure.utils.StateAdapter;
 
+/**
+ * This is preparation for adaptation. This class looks for changes in emotions and save everything to node table in database.
+ * This class is based on Lunova's work, but was upgraded with room database and adapted to our use.
+ *
+ * @author Marek Klement
+ */
 public class AdaptationPrepare implements Detector.ImageListener {
 
-    private static AdaptationPrepare instance = null;
-    private static int id = 1;
-    private final int detectorRate = 10; //  number of video frames processed per second: the greater the rate, the more CPU intensive the processing is
-    private final String NEUTRAL_STATE = "NEUTRAL";
+    // properties
+    private final static String NUMBER_OF_VISITS_PROPERTY_NAME = "detector_rate";
 
+    private static AdaptationPrepare instance = null;
+    private final String NEUTRAL_STATE = "NEUTRAL";
+    //
+    private int detectorRate; //  number of video frames processed per second: the greater the rate, the more CPU intensive the processing is
     private CameraDetector detector;
     private SurfaceView cameraPreview;
 
     private State currentState = null;
     private CompositeState states;
-
-    private ViewGroup currentLayout;
-    private int wayHere;
-
-    // this node is root for all childes
-    private Node root;
-    // node for sub-nodes, starts with root
     private Node currentNode;
 
     private ASDatabase db;
@@ -51,40 +52,50 @@ public class AdaptationPrepare implements Detector.ImageListener {
     }
 
     public void adapt(Context context, SurfaceView cameraPreview, View view, int id, String name) {
-        this.wayHere = id;
-        saveCurrentView(view);
         this.start(context, cameraPreview);
     }
 
-    private void saveCurrentView(View view) {
-        if (view instanceof ViewGroup) {
-            currentLayout = (ViewGroup) view;
-        } else {
-            throw new IllegalArgumentException("View is not type layout");
-        }
-    }
-
+    /**
+     * Intro point of this class. Everything is initialized here.
+     *
+     * @param context
+     * @param cameraPreview
+     */
     private void start(Context context, SurfaceView cameraPreview) {
         this.context = context;
         this.cameraPreview = cameraPreview;
         this.cameraPreview.setAlpha(0);
         this.states = FabricState.getAllStates();
+        this.detectorRate = getStateChangingProperty(context);
         settingDetector();
         if (currentState == null) currentState = states.getState(NEUTRAL_STATE);
     }
 
-    public void createApplicationStructure(View view, String name, List<String> buttons) {
+    /**
+     * Each node is created here.
+     *
+     * @param view
+     * @param name
+     * @param buttons
+     */
+    void createApplicationStructure(View view, String name, List<String> buttons) {
         db = DatabaseInit.getASDatabase(context);
         int parent = -1;
         if (currentNode != null && currentNode.getUid() != view.getId()) {
             parent = currentNode.getUid();
         }
-        currentNode = createNode(view.getId(), name, parent, buttons);// todo right
-        if (currentNode.getParent() == -1) {
-            root = currentNode;
-        }
+        currentNode = createNode(view.getId(), name, parent, buttons);
     }
 
+    /**
+     * Node is saved or updated in this method.
+     *
+     * @param uid
+     * @param name
+     * @param parent
+     * @param buttons
+     * @return
+     */
     private Node createNode(int uid, String name, int parent, List<String> buttons) {
         Node node = db.nodeDao().getById(uid);
         if (node == null) {
@@ -94,7 +105,6 @@ public class AdaptationPrepare implements Detector.ImageListener {
             node.setParent(parent);
             node.setButtons(buttons);
             node.setVersion(1);
-            // init all emotions todo
             //
             db.nodeDao().insert(node);
         } else {
@@ -105,17 +115,22 @@ public class AdaptationPrepare implements Detector.ImageListener {
         return node;
     }
 
+    /**
+     * This method is started when mood changes so we can save new emotions.
+     *
+     * @param faces
+     * @param frame
+     * @param v
+     */
     @Override
     public void onImageResults(List<Face> faces, Frame frame, float v) {
 
         if (faces.size() == 0) {
-            //((TextView)(activity.findViewById(R.id.textView))).setText("NO FACE");
             System.out.println("NO FACE");
         } else {
             Face face = faces.get(0);
             Face.Emotions faceEmotions = face.emotions;
             if (faceEmotions == null) {
-                //((TextView) (activity.findViewById(R.id.textView))).setText("NO EMOTION");
                 System.out.println("NO EMOTION");
             } else {
                 states.setRate(faceEmotions);
@@ -124,6 +139,9 @@ public class AdaptationPrepare implements Detector.ImageListener {
         }
     }
 
+    /**
+     * Sets detector of emotions
+     */
     private void settingDetector() {
         detector = new CameraDetector(context, CameraDetector.CameraType.CAMERA_FRONT, cameraPreview);
         if (detector == null) {
@@ -136,6 +154,9 @@ public class AdaptationPrepare implements Detector.ImageListener {
         detector.start();
     }
 
+    /**
+     * This method analyse emotions and update node when emotion is changed
+     */
     private void analiseEmotions() {
         Collection<State> stateCollection = states.getStatesLikeCollection();
         State oldCurrentState = currentState;
@@ -153,19 +174,32 @@ public class AdaptationPrepare implements Detector.ImageListener {
         if (!oldCurrentState.equals(currentState)) {
             currentState.setChanging(0);
         } else if (currentState.ifChange()) {
-            // todo update node
             StateAdapter.adaptInterface(currentNode, currentState);
             update(currentNode);
-            Node byId = db.nodeDao().getById(currentNode.getUid());
-            long ii = byId.getStateChanging();
-
-
         }
-
         System.out.println("Current state is " + currentState.getName());
     }
 
+    /**
+     * Method as holder for update in database
+     *
+     * @param node
+     */
     private void update(Node node) {
         db.nodeDao().update(node);
+    }
+
+    /**
+     * Find value of property NUMBER_OF_VISITS_PROPERTY_NAME.
+     *
+     * @param context
+     * @return
+     */
+    private int getStateChangingProperty(Context context) {
+        String numberOfStateChanging = PropertyUtil.getConfigValue(context, NUMBER_OF_VISITS_PROPERTY_NAME);
+        if (numberOfStateChanging == null) {
+            throw new IllegalArgumentException("Please set property 'main_page_name' in config file!");
+        }
+        return Integer.parseInt(numberOfStateChanging);
     }
 }

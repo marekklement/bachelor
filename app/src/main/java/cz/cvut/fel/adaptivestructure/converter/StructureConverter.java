@@ -1,7 +1,5 @@
 package cz.cvut.fel.adaptivestructure.converter;
 
-import android.util.Pair;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -11,6 +9,11 @@ import java.util.List;
 
 import androidx.room.TypeConverter;
 
+/**
+ * HashMap<String, List<String>> cannot be saved to database without converting.
+ *
+ * @author Marek Klement
+ */
 public class StructureConverter {
 
     @TypeConverter
@@ -19,7 +22,8 @@ public class StructureConverter {
             return (null);
         }
         Gson gson = new Gson();
-        Type type = new TypeToken<HashMap<String, List<String>>>() {}.getType();
+        Type type = new TypeToken<HashMap<String, List<String>>>() {
+        }.getType();
         return gson.toJson(structure, type);
     }
 
@@ -29,7 +33,8 @@ public class StructureConverter {
             return (null);
         }
         Gson gson = new Gson();
-        Type type = new TypeToken<HashMap<String, List<String>>>() {}.getType();
+        Type type = new TypeToken<HashMap<String, List<String>>>() {
+        }.getType();
         return gson.fromJson(structure, type);
     }
 }

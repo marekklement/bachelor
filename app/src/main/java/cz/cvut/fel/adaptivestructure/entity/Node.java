@@ -8,6 +8,11 @@ import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 import cz.cvut.fel.adaptivestructure.converter.ListStringConverter;
 
+/**
+ * Node represents one node in structure.
+ *
+ * @author Marek Klement
+ */
 @Entity
 public class Node {
     @PrimaryKey

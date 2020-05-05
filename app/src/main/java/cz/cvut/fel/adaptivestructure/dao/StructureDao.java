@@ -9,6 +9,11 @@ import androidx.room.Query;
 import androidx.room.Update;
 import cz.cvut.fel.adaptivestructure.entity.Structure;
 
+/**
+ * DAO for querying structures
+ *
+ * @author Marek Klement
+ */
 @Dao
 public interface StructureDao {
     @Query("SELECT * FROM structure")

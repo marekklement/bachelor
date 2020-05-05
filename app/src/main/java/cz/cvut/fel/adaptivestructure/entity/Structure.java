@@ -1,7 +1,5 @@
 package cz.cvut.fel.adaptivestructure.entity;
 
-import android.util.Pair;
-
 import java.util.HashMap;
 import java.util.List;
 
@@ -11,14 +9,19 @@ import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 import cz.cvut.fel.adaptivestructure.converter.StructureConverter;
 
+/**
+ * Structure represent the way user sees the app - like structure tree
+ *
+ * @author Marek Klement
+ */
 @Entity
 public class Structure {
 
+    @TypeConverters(StructureConverter.class)
+    HashMap<String, List<String>> pages;
     @PrimaryKey
     @ColumnInfo(name = "version")
     private int version;
-    @TypeConverters(StructureConverter.class)
-    HashMap<String, List<String>> pages;
     //List<Pair<String, List<String>>> pages;
 
     public int getVersion() {

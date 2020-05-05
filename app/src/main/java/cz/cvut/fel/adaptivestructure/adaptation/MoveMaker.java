@@ -1,6 +1,7 @@
 package cz.cvut.fel.adaptivestructure.adaptation;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Build;
 import android.view.SurfaceView;
 import android.view.View;
@@ -18,9 +19,18 @@ import cz.cvut.fel.adaptivestructure.database.DatabaseInit;
 import cz.cvut.fel.adaptivestructure.entity.Node;
 import cz.cvut.fel.adaptivestructure.entity.Structure;
 import cz.cvut.fel.adaptivestructure.inflanter.DynamicLayoutInflator;
+import cz.cvut.fel.adaptivestructure.properties.PropertyUtil;
 import cz.cvut.fel.adaptivestructure.xml.XMLMaker;
 
+/**
+ * This class provides move to another page. This application needs to be dynamic build so this is its provider.
+ *
+ * @author Marek Klement
+ */
 public class MoveMaker {
+
+    // properties
+    private final static String MAIN_PAGE_NAME = "main_page_name";
 
     private static int id = 1;
     private static ASDatabase db;
@@ -29,6 +39,11 @@ public class MoveMaker {
     public String currentViewName;
     public View currentView;
 
+    /**
+     * This is single instance class. Get instance by this method only!
+     *
+     * @return
+     */
     public static MoveMaker getInstance() {
         if (instance == null) {
             instance = new MoveMaker();
@@ -36,7 +51,13 @@ public class MoveMaker {
         return instance;
     }
 
-    public static SurfaceView getSurfaceViewFromView(View view) {
+    /**
+     * Finds SurfaceView in given ViewGroup.
+     *
+     * @param view
+     * @return
+     */
+    private static SurfaceView getSurfaceViewFromView(View view) {
         if (view instanceof ViewGroup) {
             ViewGroup vg = (ViewGroup) view;
             for (int i = 0; i < vg.getChildCount(); i++) {
@@ -54,15 +75,64 @@ public class MoveMaker {
         return null;
     }
 
-    public View move(Activity context, List<String> buttons, String className, String viewName) {
+    /**
+     * Gets name of main page from properties
+     *
+     * @param context
+     * @return
+     */
+    private static String getMainPageName(Context context) {
+        String mainPageName = PropertyUtil.getConfigValue(context, MAIN_PAGE_NAME);
+        if (mainPageName == null) {
+            throw new IllegalArgumentException("Please set property 'main_page_name' in config file!");
+        }
+        return mainPageName;
+    }
+
+    /**
+     * Init point of this method from actual activity.
+     *
+     * @param activity
+     * @param surfaceView
+     */
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public static void makeMove(Activity activity, SurfaceView surfaceView) {
+        if (MoveMaker.getInstance().nextView == null) {
+            AdaptationProvider ap = new AdaptationProvider(activity);
+            ap.changeStructure();
+            Structure structure = StructureCreation.getOrMakeStructure(activity);
+            String mainPageName = getMainPageName(activity);
+            List<String> mainPage = structure.getPages().get(mainPageName);
+            if (mainPage == null) {
+                throw new IllegalArgumentException("There should be at least one page with name " + mainPageName + "!");
+            }
+            View move = MoveMaker.getInstance().move(activity, mainPage, activity.getClass().getSimpleName(), mainPageName);
+            ViewGroup vg = (ViewGroup) move;
+            vg.addView(surfaceView);
+            activity.setContentView(vg);
+            MoveMaker.getInstance().currentView = move;
+        }
+    }
+
+    /**
+     * As this app needs to be dynamic build, this method is core for that functionality. It provides move to new page smoothly.
+     *
+     * @param context
+     * @param buttons
+     * @param className
+     * @param viewName
+     * @return
+     */
+    private View move(Activity context, List<String> buttons, String className, String viewName) {
+
         db = DatabaseInit.getASDatabase(context);
-        if(id == 1){
+        if (id == 1) {
             id = db.nodeDao().findHighestId() + 1;
         }
         if (viewName != null) {
             currentViewName = viewName;
         } else {
-            currentViewName = "mainPage";
+            currentViewName = getMainPageName(context);
         }
         List<Node> byIds = db.nodeDao().getByName(currentViewName);
         Node byId;
@@ -73,16 +143,14 @@ public class MoveMaker {
         } else {
             byId = null;
         }
-        View view = null;
+        View view;
         try {
-            String s = XMLMaker.generateXML(currentViewName, className, buttons);
+            XMLMaker.generateXML(currentViewName, className, buttons);
             view = DynamicLayoutInflator.inflateName(context, currentViewName);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
         if (byId == null) {
-//            int highestId = db.nodeDao().findHighestId() + 1;
-//            view.setId(highestId);
             view.setId(id);
             id = id + 1;
         } else {
@@ -94,7 +162,13 @@ public class MoveMaker {
         return view;
     }
 
-    public void setOnClickListeners(View view, Activity context) {
+    /**
+     * Each button needs to be initialized onCLick page change and this methods provides it for all buttons.
+     *
+     * @param view
+     * @param context
+     */
+    private void setOnClickListeners(View view, Activity context) {
         if (view instanceof ViewGroup) {
             ViewGroup vg = (ViewGroup) view;
             for (int i = 0; i < vg.getChildCount(); i++) {
@@ -109,7 +183,7 @@ public class MoveMaker {
                                 Button b = (Button) v;
                                 List<String> collect = StructureCreation.getOrMakeStructure(context).getPages().get(b.getText().toString());
                                 //List<Pair<String, List<String>>> collect = StructureCreation.getOrMakeStructure(context).getPages().stream().filter(l -> l.first.equals(b.getText().toString())).collect(Collectors.toList());
-                                if(collect == null){
+                                if (collect == null) {
                                     throw new IllegalArgumentException("Page with name '" + b.getText().toString() + "' does not exist.");
                                 }
                                 View move = MoveMaker.getInstance().move(context, collect, this.getClass().getSimpleName(), b.getText().toString());
@@ -120,7 +194,6 @@ public class MoveMaker {
                                 pv.removeView(surfaceView);
                                 vg.addView(surfaceView);
                                 context.setContentView(vg);
-                                //context.surfaceView = MoveMaker.getSurfaceViewFromView(move);
                             }
                         }
                     });
@@ -131,15 +204,19 @@ public class MoveMaker {
         }
     }
 
+    /**
+     * For dynamic app again this cannot be simple back. It needs to find previous location and switch it back.
+     *
+     * @param context
+     */
     public void setBackClickListeners(Activity context) {
         List<Node> byName = db.nodeDao().getByName(currentViewName);
         if (byName.size() != 1) {
-            // todo kdyz nejsou na dane strance emoce pak se nevytvori uzel
             throw new IllegalArgumentException("Should be just one!");
         }
         Node node = byName.get(0);
         long parent = node.getParent();
-        if(parent != -1) {
+        if (parent != -1) {
             Node byId = db.nodeDao().getById(parent);
             View move = MoveMaker.getInstance().move(context, byId.getButtons(), this.getClass().getSimpleName(), byId.getName());
             ViewGroup vg = (ViewGroup) move;
@@ -152,25 +229,6 @@ public class MoveMaker {
         } else {
             context.finish();
             System.exit(0);
-        }
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    public static void makeMove(Activity activity, SurfaceView surfaceView){
-        if (MoveMaker.getInstance().nextView == null) {
-            AdaptationProvider ap = new AdaptationProvider(activity);
-            ap.changeStructure();
-            Structure structure = StructureCreation.getOrMakeStructure(activity);
-            List<String> mainPage = structure.getPages().get("mainPage");
-            //List<Pair<String, List<String>>> mainPage = structure.getPages().stream().filter(l -> l.first.equals("mainPage")).collect(Collectors.toList());
-            if(mainPage == null){
-                throw new IllegalArgumentException("There should be at least one page with name mainPage!");
-            }
-            View move = MoveMaker.getInstance().move(activity, mainPage, activity.getClass().getSimpleName(),  "mainPage");
-            ViewGroup vg = (ViewGroup) move;
-            vg.addView(surfaceView);
-            activity.setContentView(vg);
-            MoveMaker.getInstance().currentView = move;
         }
     }
 }

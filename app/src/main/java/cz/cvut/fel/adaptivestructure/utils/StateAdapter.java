@@ -3,6 +3,11 @@ package cz.cvut.fel.adaptivestructure.utils;
 import cz.cvut.fel.adaptivestructure.entity.Node;
 import cz.cvut.fel.adaptivestructure.states.State;
 
+/**
+ * Class for adapting states. This class is base on Lunova's work and adapted to fit to my solution.
+ *
+ * @author Marek Klement
+ */
 public class StateAdapter {
 
     public static void adaptInterface(Node currentNode, State currentState) {

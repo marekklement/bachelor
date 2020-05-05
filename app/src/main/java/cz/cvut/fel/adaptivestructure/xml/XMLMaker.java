@@ -12,19 +12,20 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.List;
 
+/**
+ * This class creates actual XML which will be dynamically read by inflater.
+ *
+ * @author Marek Klement
+ */
 public class XMLMaker {
 
     public static String generateXML(String fileName, String context, List<String> buttonNames) throws IOException {
         String xmlToReturn = "";
-        Writer writer = null;
-        final File configDir = new File(Environment.getExternalStorageDirectory(), "layout");
-        configDir.mkdir();
+        Writer writer;
+        final File configDir = new File(Environment.getExternalStorageDirectory(), "test");
+        if(!configDir.exists()) configDir.mkdir();
         XmlSerializer serializer = Xml.newSerializer();
         File f = new File(configDir, fileName + ".xml");
-        boolean delete = true;
-        if (f.exists()) {
-            delete = f.delete();
-        }
         writer = new OutputStreamWriter(new FileOutputStream(new File(configDir, fileName + ".xml")));
         try {
             serializer.setOutput(writer);
@@ -35,12 +36,12 @@ public class XMLMaker {
             serializer.attribute("", "android:layout_width", "match_parent");
             serializer.attribute("", "android:layout_height", "match_parent");
             serializer.attribute("", "tools:context", ".fragments." + context);
-            serializer.attribute("", "android:id","@+id/" +  fileName);
+            serializer.attribute("", "android:id", "@+id/" + fileName);
             serializer.startTag("", "LinearLayout");
             serializer.attribute("", "android:layout_width", "match_parent");
             serializer.attribute("", "android:layout_height", "match_parent");
             serializer.attribute("", "android:orientation", "vertical");
-            for (String button : buttonNames){
+            for (String button : buttonNames) {
                 serializer.startTag("", "Button");
                 serializer.attribute("", "android:layout_width", "match_parent");
                 serializer.attribute("", "android:layout_height", "wrap_content");
@@ -49,12 +50,6 @@ public class XMLMaker {
                 serializer.attribute("", "android:id", "@+id/" + button);
                 serializer.endTag("", "Button");
             }
-//            serializer.startTag("", "SurfaceView");
-//            serializer.attribute("", "android:layout_width", "1px");
-//            serializer.attribute("", "android:layout_height", "1px");
-//            serializer.attribute("", "android:layout_marginTop", "10dp");
-//            serializer.attribute("", "android:id", "@+id/surfaceview");
-//            serializer.endTag("", "SurfaceView");
             serializer.endTag("", "LinearLayout");
             serializer.endTag("", "FrameLayout");
             serializer.endDocument();
