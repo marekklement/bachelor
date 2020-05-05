@@ -7,6 +7,9 @@ import android.os.Bundle;
 import android.view.SurfaceView;
 import android.widget.Toast;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -34,10 +37,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         checkPermission(
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA},
                 STORAGE_PERMISSION_CODE);
-        checkPermission(Manifest.permission.CAMERA,
-                CAMERA_PERMISSION_CODE);
+        waitAnswered();
+        // wait for permissions
+        //
         surfaceView = new SurfaceView(this);
         surfaceView.getHolder().setFixedSize(1, 1);
         // delete all to test
@@ -58,26 +62,23 @@ public class MainActivity extends AppCompatActivity {
         MoveMaker.getInstance().setBackClickListeners(this);
     }
 
-    public void checkPermission(String permission, int requestCode)
+    public void checkPermission(String[] permissions, int requestCode)
     {
-
-        // Checking if permission is not granted
-        if (ContextCompat.checkSelfPermission(
-                MainActivity.this,
-                permission)
-                == PackageManager.PERMISSION_DENIED) {
+        List<String> permissionsToGet = new LinkedList<>();
+        for (String permission : permissions){
+            if (ContextCompat.checkSelfPermission(
+                    MainActivity.this,
+                    permission)
+                    == PackageManager.PERMISSION_DENIED){
+                permissionsToGet.add(permission);
+            }
+        }
+        if(permissionsToGet.size()!=0){
             ActivityCompat
                     .requestPermissions(
                             MainActivity.this,
-                            new String[] { permission },
+                            permissionsToGet.toArray(new String[permissionsToGet.size()]),
                             requestCode);
-        }
-        else {
-            Toast
-                    .makeText(MainActivity.this,
-                            "Permission already granted",
-                            Toast.LENGTH_SHORT)
-                    .show();
         }
     }
 
@@ -119,6 +120,17 @@ public class MainActivity extends AppCompatActivity {
                         "Storage Permission Denied",
                         Toast.LENGTH_SHORT)
                         .show();
+            }
+        }
+    }
+
+    public void waitAnswered(){
+        boolean isAnswered = false;
+
+        while(!isAnswered){
+            if (ActivityCompat.checkSelfPermission(getApplication(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(getApplication(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                isAnswered = true;
             }
         }
     }
