@@ -2,7 +2,6 @@ package cz.cvut.fel.adaptivestructure.adaptation;
 
 import android.app.Activity;
 import android.os.Build;
-import android.util.Pair;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +10,6 @@ import android.widget.Button;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import androidx.annotation.RequiresApi;
 import cz.cvut.fel.adaptivestructure.creation.StructureCreation;
@@ -58,6 +56,9 @@ public class MoveMaker {
 
     public View move(Activity context, List<String> buttons, String className, String viewName) {
         db = DatabaseInit.getASDatabase(context);
+        if(id == 1){
+            id = db.nodeDao().findHighestId() + 1;
+        }
         if (viewName != null) {
             currentViewName = viewName;
         } else {
@@ -80,6 +81,8 @@ public class MoveMaker {
             throw new IllegalArgumentException(e);
         }
         if (byId == null) {
+//            int highestId = db.nodeDao().findHighestId() + 1;
+//            view.setId(highestId);
             view.setId(id);
             id = id + 1;
         } else {
@@ -146,6 +149,9 @@ public class MoveMaker {
             pv.removeView(surfaceView);
             vg.addView(surfaceView);
             context.setContentView(vg);
+        } else {
+            context.finish();
+            System.exit(0);
         }
     }
 

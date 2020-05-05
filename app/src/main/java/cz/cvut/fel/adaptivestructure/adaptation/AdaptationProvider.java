@@ -142,7 +142,7 @@ public class AdaptationProvider {
             node.setVersion(node.getVersion() + 1);
             db.nodeDao().update(node);
             float badMood = anger + disgust + sadness;
-            float goodMood = (neutral + joy)*2;
+            float goodMood = (neutral + joy)/** *2 **/;
             return badMood > goodMood;
         }
         return false;

@@ -26,6 +26,9 @@ public interface NodeDao {
     @Query("SELECT * FROM node WHERE name LIKE :name")
     Node findByName(String name);
 
+    @Query("SELECT uid FROM node ORDER BY uid DESC LIMIT 1")
+    int findHighestId();
+
     @Query("DELETE FROM node")
     void deleteAll();
 
