@@ -29,9 +29,6 @@ import cz.cvut.fel.adaptivestructure.xml.XMLMaker;
  */
 public class MoveMaker {
 
-    // properties
-    private final static String MAIN_PAGE_NAME = "main_page_name";
-
     private static int id = 1;
     private static ASDatabase db;
     private static MoveMaker instance;
@@ -76,20 +73,6 @@ public class MoveMaker {
     }
 
     /**
-     * Gets name of main page from properties
-     *
-     * @param context
-     * @return
-     */
-    private static String getMainPageName(Context context) {
-        String mainPageName = PropertyUtil.getConfigValue(context, MAIN_PAGE_NAME);
-        if (mainPageName == null) {
-            throw new IllegalArgumentException("Please set property 'main_page_name' in config file!");
-        }
-        return mainPageName;
-    }
-
-    /**
      * Init point of this method from actual activity.
      *
      * @param activity
@@ -101,7 +84,7 @@ public class MoveMaker {
             AdaptationProvider ap = new AdaptationProvider(activity);
             ap.changeStructure();
             Structure structure = StructureCreation.getOrMakeStructure(activity);
-            String mainPageName = getMainPageName(activity);
+            String mainPageName = PropertyUtil.getMainPageName(activity);
             List<String> mainPage = structure.getPages().get(mainPageName);
             if (mainPage == null) {
                 throw new IllegalArgumentException("There should be at least one page with name " + mainPageName + "!");
@@ -132,7 +115,7 @@ public class MoveMaker {
         if (viewName != null) {
             currentViewName = viewName;
         } else {
-            currentViewName = getMainPageName(context);
+            currentViewName = PropertyUtil.getMainPageName(context);
         }
         List<Node> byIds = db.nodeDao().getByName(currentViewName);
         Node byId;
@@ -145,7 +128,7 @@ public class MoveMaker {
         }
         View view;
         try {
-            XMLMaker.generateXML(currentViewName, className, buttons);
+            String s = XMLMaker.generateXML(currentViewName, className, buttons, context);
             view = DynamicLayoutInflator.inflateName(context, currentViewName);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);

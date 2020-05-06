@@ -1,5 +1,6 @@
 package cz.cvut.fel.adaptivestructure.xml;
 
+import android.content.Context;
 import android.os.Environment;
 import android.util.Xml;
 
@@ -12,6 +13,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.List;
 
+import cz.cvut.fel.adaptivestructure.properties.PropertyUtil;
+
 /**
  * This class creates actual XML which will be dynamically read by inflater.
  *
@@ -19,10 +22,11 @@ import java.util.List;
  */
 public class XMLMaker {
 
-    public static String generateXML(String fileName, String context, List<String> buttonNames) throws IOException {
+    public static String generateXML(String fileName, String context, List<String> buttonNames, Context con) throws IOException {
         String xmlToReturn = "";
         Writer writer;
-        final File configDir = new File(Environment.getExternalStorageDirectory(), "test");
+        String directoryName = PropertyUtil.getDirectoryName(con);
+        final File configDir = new File(Environment.getExternalStorageDirectory(), directoryName);
         if(!configDir.exists()) configDir.mkdir();
         XmlSerializer serializer = Xml.newSerializer();
         File f = new File(configDir, fileName + ".xml");

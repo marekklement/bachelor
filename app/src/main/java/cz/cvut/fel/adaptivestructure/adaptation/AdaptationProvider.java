@@ -21,10 +21,6 @@ import cz.cvut.fel.adaptivestructure.properties.PropertyUtil;
  * @author Marek Klement
  */
 class AdaptationProvider {
-
-    // properties
-    private final static String NUMBER_OF_VISITS_PROPERTY_NAME = "minimal_visits_for_change";
-    private final static String MAIN_PAGE_NAME = "main_page_name";
     //
     private ASDatabase db;
     private Structure structure;
@@ -50,7 +46,7 @@ class AdaptationProvider {
         if (structure == null) {
             return;
         }
-        String mainPageName = getMainPageName();
+        String mainPageName = PropertyUtil.getMainPageName(context);
         List<String> mainPage = structure.getPages().get(mainPageName);
         if (mainPage == null) {
             throw new IllegalArgumentException("Main page should not be null!");
@@ -193,13 +189,9 @@ class AdaptationProvider {
         float neutral = node.getNeutral();
         //
         int version = node.getVersion();
-        String minVisits = PropertyUtil.getConfigValue(context, NUMBER_OF_VISITS_PROPERTY_NAME);
-        if (minVisits == null) {
-            throw new IllegalArgumentException("Please set property 'minimal_visits_for_change' in config file!");
-        }
-        int numberOfVisits = Integer.parseInt(minVisits);
+        int numberOfVisits = PropertyUtil.getNumberOfVisits(context);
         int changeValue = version * numberOfVisits;
-        String mainPageName = getMainPageName();
+        String mainPageName = PropertyUtil.getMainPageName(context);
         if (visits >= changeValue && !node.getName().equals(mainPageName)) {
             node.setVersion(node.getVersion() + 1);
             db.nodeDao().update(node);
@@ -222,19 +214,6 @@ class AdaptationProvider {
             return shouldMove(node);
         }
         return false;
-    }
-
-    /**
-     * Gets main page from properties.
-     *
-     * @return
-     */
-    private String getMainPageName() {
-        String mainPageName = PropertyUtil.getConfigValue(context, MAIN_PAGE_NAME);
-        if (mainPageName == null) {
-            throw new IllegalArgumentException("Please set property 'main_page_name' in config file!");
-        }
-        return mainPageName;
     }
 
 }

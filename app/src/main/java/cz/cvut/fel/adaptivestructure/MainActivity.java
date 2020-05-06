@@ -5,12 +5,10 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.SurfaceView;
-import android.widget.Toast;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -26,8 +24,7 @@ import cz.cvut.fel.adaptivestructure.database.DatabaseInit;
  */
 public class MainActivity extends AppCompatActivity {
 
-    private static final int CAMERA_PERMISSION_CODE = 100;
-    private static final int STORAGE_PERMISSION_CODE = 101;
+    private static final int PERMISSION_CODE = 101;
 
     public SurfaceView surfaceView;
     AdaptationPrepare adaptationPrepare;
@@ -36,9 +33,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // some permissions needed
         checkPermission(
                 new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA},
-                STORAGE_PERMISSION_CODE);
+                PERMISSION_CODE);
         waitAnswered();
         // wait for permissions
         //
@@ -79,48 +77,6 @@ public class MainActivity extends AppCompatActivity {
                             MainActivity.this,
                             permissionsToGet.toArray(new String[permissionsToGet.size()]),
                             requestCode);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults)
-    {
-        super
-                .onRequestPermissionsResult(requestCode,
-                        permissions,
-                        grantResults);
-
-        if (requestCode == CAMERA_PERMISSION_CODE) {
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(MainActivity.this,
-                        "Camera Permission Granted",
-                        Toast.LENGTH_SHORT)
-                        .show();
-            }
-            else {
-                Toast.makeText(MainActivity.this,
-                        "Camera Permission Denied",
-                        Toast.LENGTH_SHORT)
-                        .show();
-            }
-        }
-        else if (requestCode == STORAGE_PERMISSION_CODE) {
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(MainActivity.this,
-                        "Storage Permission Granted",
-                        Toast.LENGTH_SHORT)
-                        .show();
-            }
-            else {
-                Toast.makeText(MainActivity.this,
-                        "Storage Permission Denied",
-                        Toast.LENGTH_SHORT)
-                        .show();
-            }
         }
     }
 

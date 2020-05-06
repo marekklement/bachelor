@@ -51,6 +51,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import androidx.annotation.Nullable;
+import cz.cvut.fel.adaptivestructure.properties.PropertyUtil;
 
 /**
  * Copyright Nicholas White 2015.
@@ -108,7 +109,8 @@ public class DynamicLayoutInflator {
             // Assume it's XML
             return DynamicLayoutInflator.inflate(context, name, parent);
         } else {
-            File savedFile = new File(Environment.getExternalStorageDirectory(), "layout/" + name + ".xml");
+            String directoryName = PropertyUtil.getDirectoryName(context);
+            File savedFile = new File(Environment.getExternalStorageDirectory(), directoryName +"/" + name + ".xml");
             //File savedFile = context.getFileStreamPath(name + ".xml");
             try {
                 InputStream fileStream = new FileInputStream(savedFile);

@@ -29,9 +29,6 @@ import cz.cvut.fel.adaptivestructure.utils.StateAdapter;
  */
 public class AdaptationPrepare implements Detector.ImageListener {
 
-    // properties
-    private final static String NUMBER_OF_VISITS_PROPERTY_NAME = "detector_rate";
-
     private static AdaptationPrepare instance = null;
     private final String NEUTRAL_STATE = "NEUTRAL";
     //
@@ -66,8 +63,10 @@ public class AdaptationPrepare implements Detector.ImageListener {
         this.cameraPreview = cameraPreview;
         this.cameraPreview.setAlpha(0);
         this.states = FabricState.getAllStates();
-        this.detectorRate = getStateChangingProperty(context);
-        settingDetector();
+        this.detectorRate = PropertyUtil.getStateChangingProperty(context);
+        if(detector == null) {
+            settingDetector();
+        }
         if (currentState == null) currentState = states.getState(NEUTRAL_STATE);
     }
 
@@ -139,6 +138,8 @@ public class AdaptationPrepare implements Detector.ImageListener {
         }
     }
 
+
+
     /**
      * Sets detector of emotions
      */
@@ -187,19 +188,5 @@ public class AdaptationPrepare implements Detector.ImageListener {
      */
     private void update(Node node) {
         db.nodeDao().update(node);
-    }
-
-    /**
-     * Find value of property NUMBER_OF_VISITS_PROPERTY_NAME.
-     *
-     * @param context
-     * @return
-     */
-    private int getStateChangingProperty(Context context) {
-        String numberOfStateChanging = PropertyUtil.getConfigValue(context, NUMBER_OF_VISITS_PROPERTY_NAME);
-        if (numberOfStateChanging == null) {
-            throw new IllegalArgumentException("Please set property 'main_page_name' in config file!");
-        }
-        return Integer.parseInt(numberOfStateChanging);
     }
 }
