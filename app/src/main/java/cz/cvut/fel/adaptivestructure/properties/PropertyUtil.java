@@ -20,10 +20,11 @@ public class PropertyUtil {
     private static final String TAG = "PropertyUtil";
 
     //
-    private static final String DIRECTORY_NAME_PROPERTY = "directory_of_pages";
+    private final static String DIRECTORY_NAME_PROPERTY = "directory_of_pages";
     private final static String MAIN_PAGE_NAME = "main_page_name";
     private final static String NUMBER_OF_VISITS_PROPERTY_NAME = "minimal_visits_for_change";
     private final static String STATE_CHANGING_PROPERTY_NAME = "detector_rate";
+    private final static String CHANGE_AFTER_PROPERTY_NAME = "change_after_each_version_update";
 
     private static String getConfigValue(Context context, String name) {
         Resources resources = context.getResources();
@@ -49,7 +50,7 @@ public class PropertyUtil {
      */
     public static String getDirectoryName(Context context) {
         String directoryName = PropertyUtil.getConfigValue(context, DIRECTORY_NAME_PROPERTY);
-        if (directoryName == null) {
+        if (directoryName == null || directoryName.equals("")) {
             throw new IllegalArgumentException("Please set property 'main_page_name' in config file!");
         }
         return directoryName;
@@ -63,7 +64,7 @@ public class PropertyUtil {
      */
     public static String getMainPageName(Context context) {
         String mainPageName = PropertyUtil.getConfigValue(context, MAIN_PAGE_NAME);
-        if (mainPageName == null) {
+        if (mainPageName == null || mainPageName.equals("")) {
             throw new IllegalArgumentException("Please set property 'main_page_name' in config file!");
         }
         return mainPageName;
@@ -77,7 +78,7 @@ public class PropertyUtil {
      */
     public static int getNumberOfVisits(Context context) {
         String minVisits = PropertyUtil.getConfigValue(context, NUMBER_OF_VISITS_PROPERTY_NAME);
-        if (minVisits == null) {
+        if (minVisits == null || minVisits.equals("")) {
             throw new IllegalArgumentException("Please set property 'minimal_visits_for_change' in config file!");
         }
         return Integer.parseInt(minVisits);
@@ -91,9 +92,23 @@ public class PropertyUtil {
      */
     public static int getStateChangingProperty(Context context) {
         String numberOfStateChanging = PropertyUtil.getConfigValue(context, STATE_CHANGING_PROPERTY_NAME);
-        if (numberOfStateChanging == null) {
+        if (numberOfStateChanging == null || numberOfStateChanging.equals("")) {
             throw new IllegalArgumentException("Please set property 'main_page_name' in config file!");
         }
         return Integer.parseInt(numberOfStateChanging);
+    }
+
+    /**
+     * Find value of property change after.
+     *
+     * @param context
+     * @return
+     */
+    public static boolean getChangeAfterProperty(Context context) {
+        String changeAfter = PropertyUtil.getConfigValue(context, CHANGE_AFTER_PROPERTY_NAME);
+        if (changeAfter == null || changeAfter.equals("")) {
+            throw new IllegalArgumentException("Please set property 'main_page_name' in config file!");
+        }
+        return Boolean.getBoolean(changeAfter);
     }
 }

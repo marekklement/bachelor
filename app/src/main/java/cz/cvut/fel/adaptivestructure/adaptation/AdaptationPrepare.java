@@ -95,7 +95,8 @@ public class AdaptationPrepare implements Detector.ImageListener {
      * @param buttons
      * @return
      */
-    private Node createNode(int uid, String name, int parent, List<String> buttons) {
+    public Node createNode(int uid, String name, int parent, List<String> buttons, Context context) {
+        ASDatabase db = DatabaseInit.getASDatabase(context);
         Node node = db.nodeDao().getById(uid);
         if (node == null) {
             node = new Node();
@@ -112,6 +113,19 @@ public class AdaptationPrepare implements Detector.ImageListener {
             db.nodeDao().update(node);
         }
         return node;
+    }
+
+    /**
+     * Node is saved or updated in this method.
+     *
+     * @param uid
+     * @param name
+     * @param parent
+     * @param buttons
+     * @return
+     */
+    private Node createNode(int uid, String name, int parent, List<String> buttons) {
+        return createNode(uid,name,parent,buttons,context);
     }
 
     /**

@@ -82,7 +82,8 @@ class AdaptationProvider {
             }
             // calculate if problematic
             Node node = nodes.get(0);
-            if (shouldMove(node) && node.getParent() != -1) {
+            boolean shouldMove = shouldMove(node);
+            if (shouldMove && node.getParent() != -1) {
                 List<Node> parents = db.nodeDao().getByName(parent.first);
                 if (parents.size() != 1) {
                     throw new IllegalArgumentException("There should not be " + parents.size() + " results!");
@@ -92,7 +93,7 @@ class AdaptationProvider {
                     removeFromNode(parents.get(0), button);
                     changeVersion = true;
                 // todo why moving down is not working
-                } else if (shouldMoveDown(node)) {
+                } else if (node.getParent() == 1) {
                     Node someNeighbour = getSomeNeighbour(node);
                     if (someNeighbour != null) {
                         moveToDestination(someNeighbour.getUid(), button);
@@ -112,13 +113,22 @@ class AdaptationProvider {
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
     private Node getSomeNeighbour(Node node) {
-        Node parent = db.nodeDao().getById(node.getUid());
+        Node parent = db.nodeDao().getById(node.getParent());
         List<String> buttons = parent.getButtons();
         List<String> filteredButtons = buttons.stream().filter(b -> !b.equals(node.getName())).collect(Collectors.toList());
         if (filteredButtons.size() == 0) {
             return null;
         }
-        return db.nodeDao().findByName(filteredButtons.get(0));
+        Node toReturn;
+        List<Node> byName = db.nodeDao().getByName(filteredButtons.get(0));
+        if(byName.size()==0){
+            toReturn = AdaptationPrepare.getAdaptationMaker().createNode(db.nodeDao().findHighestId() + 1, filteredButtons.get(0), node.getParent(), structure.getPages().get(filteredButtons.get(0)), context);
+        } else if(byName.size() > 1){
+            throw new IllegalArgumentException("Size of 'byName' should be one and is: " + byName.size());
+        } else {
+            toReturn = byName.get(0);
+        }
+        return toReturn;
     }
 
     /**
@@ -168,7 +178,6 @@ class AdaptationProvider {
             throw new IllegalArgumentException("There should be just one!");
         }
         Node changeParentNode = current.get(0);
-        // todo changeParentNode need to init emotions again
         changeParentNode.setParent(destination);
         db.nodeDao().update(changeParentNode);
     }
@@ -193,8 +202,7 @@ class AdaptationProvider {
         int changeValue = version * numberOfVisits;
         String mainPageName = PropertyUtil.getMainPageName(context);
         if (visits >= changeValue && !node.getName().equals(mainPageName)) {
-            node.setVersion(node.getVersion() + 1);
-            db.nodeDao().update(node);
+            updateNodeToNextVersion(node);
             float badMood = anger + disgust + sadness;
             // todo see what here
             float goodMood = (neutral + joy)/** *2 **/;
@@ -203,17 +211,21 @@ class AdaptationProvider {
         return false;
     }
 
-    /**
-     * Move down only in first page.
-     *
-     * @param node
-     * @return
-     */
-    private boolean shouldMoveDown(Node node) {
-        if (node.getParent() == 1) {
-            return shouldMove(node);
+    private void updateNodeToNextVersion(Node node) {
+        node.setVersion(node.getVersion() + 1);
+        if(PropertyUtil.getChangeAfterProperty(context)){
+            node.setNeutral(0);
+            node.setSadness(0);
+            node.setJoy(0);
+            node.setDisgust(0);
+            node.setAnger(0);
+            node.setNeutralWeight(0);
+            node.setSadnessWeight(0);
+            node.setJoyWeight(0);
+            node.setDisgustWeight(0);
+            node.setAngerWeight(0);
         }
-        return false;
+        db.nodeDao().update(node);
     }
 
 }

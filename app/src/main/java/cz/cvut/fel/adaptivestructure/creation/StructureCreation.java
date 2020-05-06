@@ -33,6 +33,7 @@ public class StructureCreation {
         List<String> buttons = new LinkedList<>();
         buttons.add("bla");
         buttons.add("bol");
+        buttons.add("testToGoDown");
         pairs.put("mainPage", buttons);
         //
         List<String> blaButtons = new LinkedList<>();
@@ -56,6 +57,8 @@ public class StructureCreation {
         pairs.put("newOne", new LinkedList<>());
         //
         pairs.put("last", new LinkedList<>());
+        //
+        pairs.put("testToGoDown", new LinkedList<>());
         //
         return pairs;
     }

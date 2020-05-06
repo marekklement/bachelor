@@ -109,8 +109,11 @@ public class MoveMaker {
     private View move(Activity context, List<String> buttons, String className, String viewName) {
 
         db = DatabaseInit.getASDatabase(context);
+        int nextId = db.nodeDao().findHighestId();
         if (id == 1) {
-            id = db.nodeDao().findHighestId() + 1;
+            id = nextId + 1;
+        } else if(nextId > id){
+            id = nextId;
         }
         if (viewName != null) {
             currentViewName = viewName;
