@@ -27,6 +27,8 @@ class AdaptationProvider {
     private Structure newStructure;
     private boolean changeVersion;
     private Context context;
+    private List<Node> databaseCopy;
+    private int stairNumber;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     AdaptationProvider(Context context) {
@@ -34,8 +36,9 @@ class AdaptationProvider {
         this.context = context;
         this.db = DatabaseInit.getASDatabase(context);
         this.structure = db.structureDao().getHighestVersion();
-        this.newStructure = structure;
+        this.newStructure = copyStructure(structure);
         this.changeVersion = false;
+        this.stairNumber = 0;
     }
 
     /**
@@ -53,8 +56,12 @@ class AdaptationProvider {
         }
         Pair<String, List<String>> pair = new Pair<>(mainPageName, mainPage);
         // calculate if problematic
+        // todo use copy of database
+        databaseCopy = db.nodeDao().getAll();
         depthFirstChange(pair);
         if (changeVersion) {
+            // todo make all changes to database - see version change and save it
+            saveToDatabase();
             newStructure.setVersion(structure.getVersion() + 1);
             db.structureDao().insert(newStructure);
         }
@@ -67,7 +74,7 @@ class AdaptationProvider {
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void depthFirstChange(Pair<String, List<String>> parent) {
-        List<String> buttons = parent.second;
+        String[] buttons = parent.second.toArray(new String[parent.second.size()]);
         for (String button : buttons) {
             List<String> page = structure.getPages().get(button);
             if (page == null) {
@@ -75,6 +82,10 @@ class AdaptationProvider {
             }
             Pair<String, List<String>> pair = new Pair<>(button, page);
             depthFirstChange(pair);
+            if(stairNumber > 0){
+                stairNumber = stairNumber - 1;
+                return;
+            }
             // get node with this name
             List<Node> nodes = db.nodeDao().getByName(button);
             if (nodes.size() != 1) {
@@ -83,6 +94,7 @@ class AdaptationProvider {
             // calculate if problematic
             Node node = nodes.get(0);
             boolean shouldMove = shouldMove(node);
+            int treshold = PropertyUtil.getTreshold(context);
             if (shouldMove && node.getParent() != -1) {
                 List<Node> parents = db.nodeDao().getByName(parent.first);
                 if (parents.size() != 1) {
@@ -91,14 +103,15 @@ class AdaptationProvider {
                 if (parents.get(0).getParent() != -1) {
                     moveToDestination(parents.get(0).getParent(), button);
                     removeFromNode(parents.get(0), button);
+                    stairNumber = 2;
                     changeVersion = true;
-                // todo why moving down is not working
-                } else if (node.getParent() == 1) {
+                } else if (node.getParent() == 1 && node.getVisitationSession() < treshold) {
                     Node someNeighbour = getSomeNeighbour(node);
                     if (someNeighbour != null) {
                         moveToDestination(someNeighbour.getUid(), button);
                         removeFromNode(parents.get(0), button);
                         changeVersion = true;
+                        stairNumber = 2;
                     }
                 }
             }
@@ -113,20 +126,18 @@ class AdaptationProvider {
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
     private Node getSomeNeighbour(Node node) {
-        Node parent = db.nodeDao().getById(node.getParent());
+        Node parent = getMostActualNode(node.getParent());
         List<String> buttons = parent.getButtons();
         List<String> filteredButtons = buttons.stream().filter(b -> !b.equals(node.getName())).collect(Collectors.toList());
         if (filteredButtons.size() == 0) {
             return null;
         }
         Node toReturn;
-        List<Node> byName = db.nodeDao().getByName(filteredButtons.get(0));
-        if(byName.size()==0){
+        Node byName = getMostActualNodeSpecial(filteredButtons.get(0));
+        if(byName == null){
             toReturn = AdaptationPrepare.getAdaptationMaker().createNode(db.nodeDao().findHighestId() + 1, filteredButtons.get(0), node.getParent(), structure.getPages().get(filteredButtons.get(0)), context);
-        } else if(byName.size() > 1){
-            throw new IllegalArgumentException("Size of 'byName' should be one and is: " + byName.size());
         } else {
-            toReturn = byName.get(0);
+            toReturn = byName;
         }
         return toReturn;
     }
@@ -142,7 +153,7 @@ class AdaptationProvider {
         List<String> buttons = node.getButtons();
         List<String> collect = buttons.stream().filter(b -> !b.equals(button)).collect(Collectors.toList());
         node.setButtons(collect);
-        db.nodeDao().update(node);
+        saveToCopy(node);
         //
         List<String> butts = newStructure.getPages().get(node.getName());
         if (butts == null) {
@@ -162,24 +173,62 @@ class AdaptationProvider {
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void moveToDestination(int destination, String buttonToAdd) {
-        Node parent = db.nodeDao().getById(destination);
+        // todo change to changing copy of dbs this block
+        Node parent = getMostActualNode(destination);
         List<String> buttons = parent.getButtons();
         buttons.add(buttonToAdd);
         parent.setButtons(buttons);
-        db.nodeDao().update(parent);
+        //db.nodeDao().update(parent);
+        saveToCopy(parent);
+        //
         List<String> collect = newStructure.getPages().get(parent.getName());
         if (collect == null) {
             throw new IllegalArgumentException("There should not be null!");
         }
         collect.add(buttonToAdd);
         newStructure.getPages().replace(parent.getName(), collect);
-        List<Node> current = db.nodeDao().getByName(buttonToAdd);
-        if (current.size() != 1) {
-            throw new IllegalArgumentException("There should be just one!");
-        }
-        Node changeParentNode = current.get(0);
+        // todo change to changing copy of dbs this block
+        Node changeParentNode = getMostActualNode(buttonToAdd);;
         changeParentNode.setParent(destination);
-        db.nodeDao().update(changeParentNode);
+        saveToCopy(changeParentNode);
+        //
+    }
+
+    private Node getMostActualNode(int id){
+        Node byDest = getNode(id);
+        if(byDest!=null){
+            return byDest;
+        } else {
+            return db.nodeDao().getById(id);
+        }
+    }
+
+    private Node getMostActualNode(String name){
+        Node byDest = getNode(name);
+        if(byDest!=null){
+            return byDest;
+        } else {
+            List<Node> byName = db.nodeDao().getByName(name);
+            if(byName.size()!=1){
+                throw new IllegalArgumentException("Should be exactly one!");
+            }
+            return byName.get(0);
+        }
+    }
+
+    private Node getMostActualNodeSpecial(String name){
+        Node byDest = getNode(name);
+        if(byDest!=null){
+            return byDest;
+        } else {
+            List<Node> byName = db.nodeDao().getByName(name);
+            if(byName.size() > 1){
+                throw new IllegalArgumentException("Should be exactly one!");
+            } else if(byName.size() == 0){
+                return null;
+            }
+            return byName.get(0);
+        }
     }
 
     /**
@@ -202,6 +251,7 @@ class AdaptationProvider {
         int changeValue = version * numberOfVisits;
         String mainPageName = PropertyUtil.getMainPageName(context);
         if (visits >= changeValue && !node.getName().equals(mainPageName)) {
+            // todo modify just copy
             updateNodeToNextVersion(node);
             float badMood = anger + disgust + sadness;
             // todo see what here
@@ -212,6 +262,7 @@ class AdaptationProvider {
     }
 
     private void updateNodeToNextVersion(Node node) {
+        // todo modify just copy - no save
         node.setVersion(node.getVersion() + 1);
         if(PropertyUtil.getChangeAfterProperty(context)){
             node.setNeutral(0);
@@ -225,7 +276,53 @@ class AdaptationProvider {
             node.setDisgustWeight(0);
             node.setAngerWeight(0);
         }
-        db.nodeDao().update(node);
+        saveToCopy(node);
+    }
+
+    private Node getNode(String name){
+        List<Node> collect = databaseCopy.stream().filter(node -> node.getName().equals(name)).collect(Collectors.toList());
+        if(collect.size()==0){
+            return null;
+        } else if(collect.size() > 1){
+            throw new IllegalArgumentException("There should be just one with this name!");
+        }
+        return collect.get(0);
+    }
+
+    private Node getNode(int id){
+        List<Node> collect = databaseCopy.stream().filter(node -> node.getUid() == id).collect(Collectors.toList());
+        if(collect.size()==0){
+            return null;
+        } else if(collect.size() > 1){
+            throw new IllegalArgumentException("There should be just one with this name!");
+        }
+        return collect.get(0);
+    }
+
+    private void saveToCopy(Node node){
+        List<Node> collect = databaseCopy.stream().filter(n -> n.getUid() == node.getUid()).collect(Collectors.toList());
+        if(collect.size() == 0){
+            databaseCopy.add(node);
+        } else if (collect.size() > 1){
+            throw new IllegalArgumentException("There should be just one with this name!");
+        } else {
+            databaseCopy.remove(collect.get(0));
+            databaseCopy.add(node);
+        }
+    }
+
+    private void saveToDatabase(){
+        databaseCopy.forEach(node -> db.nodeDao().update(node));
+    }
+
+    private Structure copyStructure(Structure structure){
+        if(structure == null){
+            return null;
+        }
+        Structure struct = new Structure();
+        struct.setVersion(structure.getVersion());
+        struct.setPages((HashMap<String, List<String>>) structure.getPages().clone());
+        return struct;
     }
 
 }

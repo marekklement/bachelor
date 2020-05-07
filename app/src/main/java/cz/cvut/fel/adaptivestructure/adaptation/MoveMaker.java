@@ -1,7 +1,6 @@
 package cz.cvut.fel.adaptivestructure.adaptation;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Build;
 import android.view.SurfaceView;
 import android.view.View;
@@ -10,6 +9,8 @@ import android.view.ViewParent;
 import android.widget.Button;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import androidx.annotation.RequiresApi;
@@ -109,6 +110,13 @@ public class MoveMaker {
     private View move(Activity context, List<String> buttons, String className, String viewName) {
 
         db = DatabaseInit.getASDatabase(context);
+        if(currentViewName!=null){
+            List<Node> parents = db.nodeDao().getByName(currentViewName);
+            if(parents.size() != 1){
+                throw new IllegalArgumentException("Have to be exactly one result!");
+            }
+            setTimeSession(parents.get(0));
+        }
         int nextId = db.nodeDao().findHighestId();
         if (id == 1) {
             id = nextId + 1;
@@ -148,6 +156,20 @@ public class MoveMaker {
         return view;
     }
 
+    private void setTimeSession(Node node) {
+        LocalDateTime startVisit = node.getStartVisit();
+        if(startVisit == null){
+            throw new IllegalArgumentException("StartVisits are not set!");
+        }
+        Duration duration = Duration.between(startVisit, LocalDateTime.now());
+        long seconds = duration.getSeconds();
+        long visitationSession = node.getVisitationSession();
+        long visits = node.getVisits() + 1;
+        long newValue = (visitationSession + seconds) / visits;
+        node.setVisitationSession(newValue);
+        db.nodeDao().update(node);
+    }
+
     /**
      * Each button needs to be initialized onCLick page change and this methods provides it for all buttons.
      *
@@ -168,7 +190,6 @@ public class MoveMaker {
                             if (v instanceof Button) {
                                 Button b = (Button) v;
                                 List<String> collect = StructureCreation.getOrMakeStructure(context).getPages().get(b.getText().toString());
-                                //List<Pair<String, List<String>>> collect = StructureCreation.getOrMakeStructure(context).getPages().stream().filter(l -> l.first.equals(b.getText().toString())).collect(Collectors.toList());
                                 if (collect == null) {
                                     throw new IllegalArgumentException("Page with name '" + b.getText().toString() + "' does not exist.");
                                 }

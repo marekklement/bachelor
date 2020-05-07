@@ -12,7 +12,7 @@ import cz.cvut.fel.adaptivestructure.entity.Structure;
  *
  * @author Marek Klement
  */
-@Database(entities = {Node.class, Structure.class}, version = 9)
+@Database(entities = {Node.class, Structure.class}, version = 10)
 public abstract class ASDatabase extends RoomDatabase {
     public abstract NodeDao nodeDao();
 

@@ -1,5 +1,6 @@
 package cz.cvut.fel.adaptivestructure.entity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import androidx.room.ColumnInfo;
@@ -7,6 +8,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 import cz.cvut.fel.adaptivestructure.converter.ListStringConverter;
+import cz.cvut.fel.adaptivestructure.converter.LocalDateTimeConverter;
 
 /**
  * Node represents one node in structure.
@@ -56,6 +58,26 @@ public class Node {
     private long sadnessWeight;
     @ColumnInfo(name = "anger_weight", defaultValue = "0")
     private long angerWeight;
+    @TypeConverters(LocalDateTimeConverter.class)
+    private LocalDateTime startVisit;
+    @ColumnInfo(name = "visitation_session", defaultValue = "0")
+    private long visitationSession;
+
+    public LocalDateTime getStartVisit() {
+        return startVisit;
+    }
+
+    public void setStartVisit(LocalDateTime startVisit) {
+        this.startVisit = startVisit;
+    }
+
+    public long getVisitationSession() {
+        return visitationSession;
+    }
+
+    public void setVisitationSession(long visitationSession) {
+        this.visitationSession = visitationSession;
+    }
 
     public int getVersion() {
         return version;

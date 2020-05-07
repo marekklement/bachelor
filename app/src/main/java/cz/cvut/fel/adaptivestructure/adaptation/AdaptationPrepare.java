@@ -9,6 +9,7 @@ import com.affectiva.android.affdex.sdk.detector.CameraDetector;
 import com.affectiva.android.affdex.sdk.detector.Detector;
 import com.affectiva.android.affdex.sdk.detector.Face;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -105,11 +106,13 @@ public class AdaptationPrepare implements Detector.ImageListener {
             node.setParent(parent);
             node.setButtons(buttons);
             node.setVersion(1);
+            node.setStartVisit(LocalDateTime.now());
             //
             db.nodeDao().insert(node);
         } else {
             long visits = node.getVisits() + 1;
             node.setVisits(visits);
+            node.setStartVisit(LocalDateTime.now());
             db.nodeDao().update(node);
         }
         return node;

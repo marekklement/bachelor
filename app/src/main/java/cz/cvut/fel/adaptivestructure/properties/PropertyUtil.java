@@ -25,6 +25,7 @@ public class PropertyUtil {
     private final static String NUMBER_OF_VISITS_PROPERTY_NAME = "minimal_visits_for_change";
     private final static String STATE_CHANGING_PROPERTY_NAME = "detector_rate";
     private final static String CHANGE_AFTER_PROPERTY_NAME = "change_after_each_version_update";
+    private final static String TRESHOLD_NAME = "treshold";
 
     private static String getConfigValue(Context context, String name) {
         Resources resources = context.getResources();
@@ -82,6 +83,20 @@ public class PropertyUtil {
             throw new IllegalArgumentException("Please set property 'minimal_visits_for_change' in config file!");
         }
         return Integer.parseInt(minVisits);
+    }
+
+    /**
+     * Gets treshold value from properties
+     *
+     * @param context
+     * @return
+     */
+    public static int getTreshold(Context context) {
+        String treshold = PropertyUtil.getConfigValue(context, TRESHOLD_NAME);
+        if (treshold == null || treshold.equals("")) {
+            throw new IllegalArgumentException("Please set property 'treshold' in config file!");
+        }
+        return Integer.parseInt(treshold);
     }
 
     /**
