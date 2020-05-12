@@ -110,9 +110,9 @@ public class MoveMaker {
     private View move(Activity context, List<String> buttons, String className, String viewName) {
 
         db = DatabaseInit.getASDatabase(context);
-        if(currentViewName!=null){
+        if (currentViewName != null) {
             List<Node> parents = db.nodeDao().getByName(currentViewName);
-            if(parents.size() != 1){
+            if (parents.size() != 1) {
                 throw new IllegalArgumentException("Have to be exactly one result!");
             }
             setTimeSession(parents.get(0));
@@ -120,7 +120,7 @@ public class MoveMaker {
         int nextId = db.nodeDao().findHighestId();
         if (id == 1) {
             id = nextId + 1;
-        } else if(nextId > id){
+        } else if (nextId > id) {
             id = nextId;
         }
         if (viewName != null) {
@@ -158,7 +158,7 @@ public class MoveMaker {
 
     private void setTimeSession(Node node) {
         LocalDateTime startVisit = node.getStartVisit();
-        if(startVisit == null){
+        if (startVisit == null) {
             throw new IllegalArgumentException("StartVisits are not set!");
         }
         Duration duration = Duration.between(startVisit, LocalDateTime.now());

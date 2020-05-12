@@ -27,7 +27,7 @@ public class XMLMaker {
         Writer writer;
         String directoryName = PropertyUtil.getDirectoryName(con);
         final File configDir = new File(Environment.getExternalStorageDirectory(), directoryName);
-        if(!configDir.exists()) configDir.mkdir();
+        if (!configDir.exists()) configDir.mkdir();
         XmlSerializer serializer = Xml.newSerializer();
         File f = new File(configDir, fileName + ".xml");
         writer = new OutputStreamWriter(new FileOutputStream(new File(configDir, fileName + ".xml")));

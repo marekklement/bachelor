@@ -65,7 +65,7 @@ public class AdaptationPrepare implements Detector.ImageListener {
         this.cameraPreview.setAlpha(0);
         this.states = FabricState.getAllStates();
         this.detectorRate = PropertyUtil.getStateChangingProperty(context);
-        if(detector == null) {
+        if (detector == null) {
             settingDetector();
         }
         if (currentState == null) currentState = states.getState(NEUTRAL_STATE);
@@ -128,7 +128,7 @@ public class AdaptationPrepare implements Detector.ImageListener {
      * @return
      */
     private Node createNode(int uid, String name, int parent, List<String> buttons) {
-        return createNode(uid,name,parent,buttons,context);
+        return createNode(uid, name, parent, buttons, context);
     }
 
     /**
@@ -154,7 +154,6 @@ public class AdaptationPrepare implements Detector.ImageListener {
             }
         }
     }
-
 
 
     /**

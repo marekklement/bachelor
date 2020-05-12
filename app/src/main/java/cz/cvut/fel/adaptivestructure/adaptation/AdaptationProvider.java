@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import androidx.annotation.RequiresApi;
 import cz.cvut.fel.adaptivestructure.database.ASDatabase;
 import cz.cvut.fel.adaptivestructure.database.DatabaseInit;
+import cz.cvut.fel.adaptivestructure.entity.AppInfo;
 import cz.cvut.fel.adaptivestructure.entity.Node;
 import cz.cvut.fel.adaptivestructure.entity.Structure;
 import cz.cvut.fel.adaptivestructure.properties.PropertyUtil;
@@ -21,6 +22,19 @@ import cz.cvut.fel.adaptivestructure.properties.PropertyUtil;
  * @author Marek Klement
  */
 class AdaptationProvider {
+    //
+    // thresholds
+    private static DoubleRange disgustWomenY = new DoubleRange(0.509, 0.86);
+    private static DoubleRange angerWomenY = new DoubleRange(0.0296, 0.447);
+    private static DoubleRange happinessWomenY = new DoubleRange(5.12, 8.22);
+    private static DoubleRange sadnessWomenY = new DoubleRange(11.4, 15);
+    private static DoubleRange happinessWomenO = new DoubleRange(0.017, 0.0704);
+    //
+    private static DoubleRange angerMenY = new DoubleRange(0.0445, 0.617);
+    private static DoubleRange sadnessMenY = new DoubleRange(12, 40.6);
+    private static DoubleRange disgustMenY = new DoubleRange(0.0131, 0.418);
+    private static DoubleRange angerMenO = new DoubleRange(0, 100);
+
     //
     private ASDatabase db;
     private Structure structure;
@@ -56,11 +70,10 @@ class AdaptationProvider {
         }
         Pair<String, List<String>> pair = new Pair<>(mainPageName, mainPage);
         // calculate if problematic
-        // todo use copy of database
         databaseCopy = db.nodeDao().getAll();
         depthFirstChange(pair);
         if (changeVersion) {
-            // todo make all changes to database - see version change and save it
+            initAllNodes();
             saveToDatabase();
             newStructure.setVersion(structure.getVersion() + 1);
             db.structureDao().insert(newStructure);
@@ -82,7 +95,7 @@ class AdaptationProvider {
             }
             Pair<String, List<String>> pair = new Pair<>(button, page);
             depthFirstChange(pair);
-            if(stairNumber > 0){
+            if (stairNumber > 0) {
                 stairNumber = stairNumber - 1;
                 return;
             }
@@ -100,7 +113,7 @@ class AdaptationProvider {
                 if (parents.size() != 1) {
                     throw new IllegalArgumentException("There should not be " + parents.size() + " results!");
                 }
-                if (parents.get(0).getParent() != -1) {
+                if (parents.get(0).getParent() != -1 && node.getVisitationSession() < treshold) {
                     moveToDestination(parents.get(0).getParent(), button);
                     removeFromNode(parents.get(0), button);
                     stairNumber = 2;
@@ -134,7 +147,7 @@ class AdaptationProvider {
         }
         Node toReturn;
         Node byName = getMostActualNodeSpecial(filteredButtons.get(0));
-        if(byName == null){
+        if (byName == null) {
             toReturn = AdaptationPrepare.getAdaptationMaker().createNode(db.nodeDao().findHighestId() + 1, filteredButtons.get(0), node.getParent(), structure.getPages().get(filteredButtons.get(0)), context);
         } else {
             toReturn = byName;
@@ -173,7 +186,6 @@ class AdaptationProvider {
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void moveToDestination(int destination, String buttonToAdd) {
-        // todo change to changing copy of dbs this block
         Node parent = getMostActualNode(destination);
         List<String> buttons = parent.getButtons();
         buttons.add(buttonToAdd);
@@ -187,44 +199,44 @@ class AdaptationProvider {
         }
         collect.add(buttonToAdd);
         newStructure.getPages().replace(parent.getName(), collect);
-        // todo change to changing copy of dbs this block
-        Node changeParentNode = getMostActualNode(buttonToAdd);;
+        Node changeParentNode = getMostActualNode(buttonToAdd);
+        ;
         changeParentNode.setParent(destination);
         saveToCopy(changeParentNode);
         //
     }
 
-    private Node getMostActualNode(int id){
+    private Node getMostActualNode(int id) {
         Node byDest = getNode(id);
-        if(byDest!=null){
+        if (byDest != null) {
             return byDest;
         } else {
             return db.nodeDao().getById(id);
         }
     }
 
-    private Node getMostActualNode(String name){
+    private Node getMostActualNode(String name) {
         Node byDest = getNode(name);
-        if(byDest!=null){
+        if (byDest != null) {
             return byDest;
         } else {
             List<Node> byName = db.nodeDao().getByName(name);
-            if(byName.size()!=1){
+            if (byName.size() != 1) {
                 throw new IllegalArgumentException("Should be exactly one!");
             }
             return byName.get(0);
         }
     }
 
-    private Node getMostActualNodeSpecial(String name){
+    private Node getMostActualNodeSpecial(String name) {
         Node byDest = getNode(name);
-        if(byDest!=null){
+        if (byDest != null) {
             return byDest;
         } else {
             List<Node> byName = db.nodeDao().getByName(name);
-            if(byName.size() > 1){
+            if (byName.size() > 1) {
                 throw new IllegalArgumentException("Should be exactly one!");
-            } else if(byName.size() == 0){
+            } else if (byName.size() == 0) {
                 return null;
             }
             return byName.get(0);
@@ -239,32 +251,29 @@ class AdaptationProvider {
      */
     private boolean shouldMove(Node node) {
         long visits = node.getVisits();
-        // emotions - just for better visibility
-        float anger = node.getAnger();
-        float disgust = node.getDisgust();
-        float joy = node.getJoy();
-        float sadness = node.getSadness();
-        float neutral = node.getNeutral();
         //
         int version = node.getVersion();
         int numberOfVisits = PropertyUtil.getNumberOfVisits(context);
         int changeValue = version * numberOfVisits;
         String mainPageName = PropertyUtil.getMainPageName(context);
         if (visits >= changeValue && !node.getName().equals(mainPageName)) {
-            // todo modify just copy
             updateNodeToNextVersion(node);
-            float badMood = anger + disgust + sadness;
-            // todo see what here
-            float goodMood = (neutral + joy)/** *2 **/;
-            return badMood > goodMood;
+            return getChangeOnGenderAndAge(node);
         }
         return false;
     }
 
     private void updateNodeToNextVersion(Node node) {
-        // todo modify just copy - no save
         node.setVersion(node.getVersion() + 1);
-        if(PropertyUtil.getChangeAfterProperty(context)){
+        saveToCopy(node);
+    }
+
+    private void initAllNodes() {
+        if (!PropertyUtil.getChangeAfterProperty(context)) {
+            return;
+        }
+        List<Node> all = db.nodeDao().getAll();
+        for (Node node : all) {
             node.setNeutral(0);
             node.setSadness(0);
             node.setJoy(0);
@@ -275,35 +284,35 @@ class AdaptationProvider {
             node.setJoyWeight(0);
             node.setDisgustWeight(0);
             node.setAngerWeight(0);
+            db.nodeDao().update(node);
         }
-        saveToCopy(node);
     }
 
-    private Node getNode(String name){
+    private Node getNode(String name) {
         List<Node> collect = databaseCopy.stream().filter(node -> node.getName().equals(name)).collect(Collectors.toList());
-        if(collect.size()==0){
+        if (collect.size() == 0) {
             return null;
-        } else if(collect.size() > 1){
+        } else if (collect.size() > 1) {
             throw new IllegalArgumentException("There should be just one with this name!");
         }
         return collect.get(0);
     }
 
-    private Node getNode(int id){
+    private Node getNode(int id) {
         List<Node> collect = databaseCopy.stream().filter(node -> node.getUid() == id).collect(Collectors.toList());
-        if(collect.size()==0){
+        if (collect.size() == 0) {
             return null;
-        } else if(collect.size() > 1){
+        } else if (collect.size() > 1) {
             throw new IllegalArgumentException("There should be just one with this name!");
         }
         return collect.get(0);
     }
 
-    private void saveToCopy(Node node){
+    private void saveToCopy(Node node) {
         List<Node> collect = databaseCopy.stream().filter(n -> n.getUid() == node.getUid()).collect(Collectors.toList());
-        if(collect.size() == 0){
+        if (collect.size() == 0) {
             databaseCopy.add(node);
-        } else if (collect.size() > 1){
+        } else if (collect.size() > 1) {
             throw new IllegalArgumentException("There should be just one with this name!");
         } else {
             databaseCopy.remove(collect.get(0));
@@ -311,18 +320,64 @@ class AdaptationProvider {
         }
     }
 
-    private void saveToDatabase(){
+    private void saveToDatabase() {
         databaseCopy.forEach(node -> db.nodeDao().update(node));
     }
 
-    private Structure copyStructure(Structure structure){
-        if(structure == null){
+    private Structure copyStructure(Structure structure) {
+        if (structure == null) {
             return null;
         }
         Structure struct = new Structure();
         struct.setVersion(structure.getVersion());
         struct.setPages((HashMap<String, List<String>>) structure.getPages().clone());
         return struct;
+    }
+
+    private boolean getChangeOnGenderAndAge(Node node) {
+        AppInfo byId = db.appInfoDao().getById(1);
+        if (byId.getGender() == null) {
+            throw new IllegalArgumentException("No gender information");
+        }
+        if (byId.getAge() == 0) {
+            throw new IllegalArgumentException("No age information");
+        }
+        if (byId.getGender().equals("Male")) {
+            if (byId.getAge() >= 27) {
+                return getOldMenChange(node);
+            } else {
+                return getYoungMenChange(node);
+            }
+        } else if (byId.getGender().equals("Female")) {
+            if (byId.getAge() >= 27) {
+                return getOldWomenChange(node);
+            } else {
+                return getYoungWomenChange(node);
+            }
+        } else {
+            throw new IllegalArgumentException("No other gender exist!");
+        }
+    }
+
+    private boolean getYoungWomenChange(Node node) {
+        return angerWomenY.isInside(node.getAnger()) ||
+                happinessWomenY.isInside(node.getJoy()) ||
+                sadnessWomenY.isInside(node.getSadness()) ||
+                disgustWomenY.isInside(node.getDisgust());
+    }
+
+    private boolean getYoungMenChange(Node node) {
+        return angerMenY.isInside(node.getAnger()) ||
+                sadnessMenY.isInside(node.getSadness()) ||
+                disgustMenY.isInside(node.getDisgust());
+    }
+
+    private boolean getOldMenChange(Node node) {
+        return angerMenO.isInside(node.getAnger());
+    }
+
+    private boolean getOldWomenChange(Node node) {
+        return happinessWomenO.isInside(node.getAnger());
     }
 
 }

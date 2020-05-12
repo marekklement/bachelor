@@ -110,7 +110,7 @@ public class DynamicLayoutInflator {
             return DynamicLayoutInflator.inflate(context, name, parent);
         } else {
             String directoryName = PropertyUtil.getDirectoryName(context);
-            File savedFile = new File(Environment.getExternalStorageDirectory(), directoryName +"/" + name + ".xml");
+            File savedFile = new File(Environment.getExternalStorageDirectory(), directoryName + "/" + name + ".xml");
             //File savedFile = context.getFileStreamPath(name + ".xml");
             try {
                 InputStream fileStream = new FileInputStream(savedFile);
@@ -935,6 +935,7 @@ public class DynamicLayoutInflator {
         public HashMap<String, Integer> nameToIdNumber;
         public Object delegate;
         public GradientDrawable bgDrawable;
+
         public DynamicLayoutInfo() {
             nameToIdNumber = new HashMap<>();
         }

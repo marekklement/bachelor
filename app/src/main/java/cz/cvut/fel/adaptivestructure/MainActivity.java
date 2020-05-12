@@ -15,7 +15,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import cz.cvut.fel.adaptivestructure.adaptation.AdaptationPrepare;
 import cz.cvut.fel.adaptivestructure.adaptation.MoveMaker;
-import cz.cvut.fel.adaptivestructure.database.DatabaseInit;
 
 /**
  * Demo app activity.
@@ -60,18 +59,17 @@ public class MainActivity extends AppCompatActivity {
         MoveMaker.getInstance().setBackClickListeners(this);
     }
 
-    public void checkPermission(String[] permissions, int requestCode)
-    {
+    public void checkPermission(String[] permissions, int requestCode) {
         List<String> permissionsToGet = new LinkedList<>();
-        for (String permission : permissions){
+        for (String permission : permissions) {
             if (ContextCompat.checkSelfPermission(
                     MainActivity.this,
                     permission)
-                    == PackageManager.PERMISSION_DENIED){
+                    == PackageManager.PERMISSION_DENIED) {
                 permissionsToGet.add(permission);
             }
         }
-        if(permissionsToGet.size()!=0){
+        if (permissionsToGet.size() != 0) {
             ActivityCompat
                     .requestPermissions(
                             MainActivity.this,
@@ -80,10 +78,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void waitAnswered(){
+    public void waitAnswered() {
         boolean isAnswered = false;
 
-        while(!isAnswered){
+        while (!isAnswered) {
             if (ActivityCompat.checkSelfPermission(getApplication(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
                     ActivityCompat.checkSelfPermission(getApplication(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                 isAnswered = true;
