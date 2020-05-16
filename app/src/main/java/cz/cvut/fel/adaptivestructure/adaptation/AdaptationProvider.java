@@ -1,14 +1,19 @@
 package cz.cvut.fel.adaptivestructure.adaptation;
 
 import android.content.Context;
-import android.os.Build;
+import android.os.Environment;
 import android.util.Pair;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import androidx.annotation.RequiresApi;
 import cz.cvut.fel.adaptivestructure.database.ASDatabase;
 import cz.cvut.fel.adaptivestructure.database.DatabaseInit;
 import cz.cvut.fel.adaptivestructure.entity.AppInfo;
@@ -44,7 +49,6 @@ class AdaptationProvider {
     private List<Node> databaseCopy;
     private int stairNumber;
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     AdaptationProvider(Context context) {
         //
         this.context = context;
@@ -58,8 +62,7 @@ class AdaptationProvider {
     /**
      * This method is start point of adaptation itself. It start depth first recursion.
      */
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    void changeStructure() {
+    void changeStructure() throws IOException {
         if (structure == null) {
             return;
         }
@@ -72,12 +75,18 @@ class AdaptationProvider {
         // calculate if problematic
         databaseCopy = db.nodeDao().getAll();
         depthFirstChange(pair);
+        exportDatabase();
         if (changeVersion) {
             initAllNodes();
             saveToDatabase();
-            newStructure.setVersion(structure.getVersion() + 1);
+            updateNewStructureVersion();
             db.structureDao().insert(newStructure);
         }
+    }
+
+    private void updateNewStructureVersion() {
+        int version = structure.getVersion() + 1;
+        newStructure.setVersion(version);
     }
 
     /**
@@ -85,7 +94,6 @@ class AdaptationProvider {
      *
      * @param parent
      */
-    @RequiresApi(api = Build.VERSION_CODES.N)
     private void depthFirstChange(Pair<String, List<String>> parent) {
         String[] buttons = parent.second.toArray(new String[parent.second.size()]);
         for (String button : buttons) {
@@ -107,21 +115,21 @@ class AdaptationProvider {
             // calculate if problematic
             Node node = nodes.get(0);
             boolean shouldMove = shouldMove(node);
-            int treshold = PropertyUtil.getTreshold(context);
+            int treshold = PropertyUtil.getThreshold(context);
             if (shouldMove && node.getParent() != -1) {
                 List<Node> parents = db.nodeDao().getByName(parent.first);
                 if (parents.size() != 1) {
                     throw new IllegalArgumentException("There should not be " + parents.size() + " results!");
                 }
-                if (parents.get(0).getParent() != -1 && node.getVisitationSession() < treshold) {
+                if (parents.get(0).getParent() != -1 && node.getVisitationSession() > treshold) {
                     moveToDestination(parents.get(0).getParent(), button);
                     removeFromNode(parents.get(0), button);
                     stairNumber = 2;
                     changeVersion = true;
-                } else if (node.getParent() == 1 && node.getVisitationSession() < treshold) {
+                } else if (node.getVisitationSession() < treshold && node.getButtons().size() == 0) {
                     Node someNeighbour = getSomeNeighbour(node);
                     if (someNeighbour != null) {
-                        moveToDestination(someNeighbour.getUid(), button);
+                        moveToDestination(someNeighbour.getId(), button);
                         removeFromNode(parents.get(0), button);
                         changeVersion = true;
                         stairNumber = 2;
@@ -137,7 +145,6 @@ class AdaptationProvider {
      * @param node
      * @return
      */
-    @RequiresApi(api = Build.VERSION_CODES.N)
     private Node getSomeNeighbour(Node node) {
         Node parent = getMostActualNode(node.getParent());
         List<String> buttons = parent.getButtons();
@@ -161,7 +168,6 @@ class AdaptationProvider {
      * @param node
      * @param button
      */
-    @RequiresApi(api = Build.VERSION_CODES.N)
     private void removeFromNode(Node node, String button) {
         List<String> buttons = node.getButtons();
         List<String> collect = buttons.stream().filter(b -> !b.equals(button)).collect(Collectors.toList());
@@ -184,7 +190,6 @@ class AdaptationProvider {
      * @param destination
      * @param buttonToAdd
      */
-    @RequiresApi(api = Build.VERSION_CODES.N)
     private void moveToDestination(int destination, String buttonToAdd) {
         Node parent = getMostActualNode(destination);
         List<String> buttons = parent.getButtons();
@@ -299,7 +304,7 @@ class AdaptationProvider {
     }
 
     private Node getNode(int id) {
-        List<Node> collect = databaseCopy.stream().filter(node -> node.getUid() == id).collect(Collectors.toList());
+        List<Node> collect = databaseCopy.stream().filter(node -> node.getId() == id).collect(Collectors.toList());
         if (collect.size() == 0) {
             return null;
         } else if (collect.size() > 1) {
@@ -309,7 +314,7 @@ class AdaptationProvider {
     }
 
     private void saveToCopy(Node node) {
-        List<Node> collect = databaseCopy.stream().filter(n -> n.getUid() == node.getUid()).collect(Collectors.toList());
+        List<Node> collect = databaseCopy.stream().filter(n -> n.getId() == node.getId()).collect(Collectors.toList());
         if (collect.size() == 0) {
             databaseCopy.add(node);
         } else if (collect.size() > 1) {
@@ -378,6 +383,118 @@ class AdaptationProvider {
 
     private boolean getOldWomenChange(Node node) {
         return happinessWomenO.isInside(node.getAnger());
+    }
+
+    private void exportDatabase() throws IOException {
+        String directoryName = PropertyUtil.getDirectoryName(context);
+        final File configDir = new File(Environment.getExternalStorageDirectory(), directoryName);
+        if (!configDir.exists()) configDir.mkdir();
+        Writer writer = new OutputStreamWriter(new FileOutputStream(new File(configDir, "export-" + LocalDateTime.now().toString() + ".csv")));
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append(appendNodes());
+            sb.append(appendStructure());
+            sb.append(appendInfo());
+
+            writer.write(sb.toString());
+
+            System.out.println("done!");
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (writer != null) writer.close();
+        }
+    }
+
+    private String appendNodes() {
+        List<Node> all = db.nodeDao().getAll();
+        StringBuilder sb = new StringBuilder();
+        sb.append("name,");
+        sb.append(';');
+        sb.append("anger");
+        sb.append(';');
+        sb.append("disgust");
+        sb.append(';');
+        sb.append("joy");
+        sb.append(';');
+        sb.append("neutral");
+        sb.append(';');
+        sb.append("sadness");
+        sb.append(';');
+        sb.append("visits");
+        sb.append(';');
+        sb.append("Average time visit");
+        sb.append(';');
+        sb.append("version");
+        sb.append('\n');
+        for (Node node : all) {
+            sb.append(node.getName());
+            sb.append(';');
+            sb.append(node.getAnger());
+            sb.append(';');
+            sb.append(node.getDisgust());
+            sb.append(';');
+            sb.append(node.getJoy());
+            sb.append(';');
+            sb.append(node.getNeutral());
+            sb.append(';');
+            sb.append(node.getSadness());
+            sb.append(';');
+            sb.append(node.getVisits());
+            sb.append(';');
+            sb.append(node.getVisitationSession());
+            sb.append(';');
+            sb.append(node.getVersion());
+            sb.append('\n');
+        }
+        return sb.toString();
+    }
+
+    private String appendStructure() {
+        List<Structure> all = db.structureDao().getAll();
+        StringBuilder sb = new StringBuilder();
+        sb.append('\n');
+        sb.append("version,");
+        sb.append(';');
+        sb.append("page-buttons");
+        sb.append('\n');
+        for (Structure structure : all) {
+            sb.append(structure.getVersion());
+            sb.append(';');
+            structure.getPages().forEach((key, buttons) -> sb.append(handlePages(key, buttons)));
+            sb.append('\n');
+        }
+        return sb.toString();
+    }
+
+    private String handlePages(String key, List<String> buttons) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(key);
+        sb.append("-");
+        for (String button : buttons) {
+            sb.append(button);
+            sb.append(",");
+        }
+        sb.append(" //**// ");
+        return sb.toString();
+    }
+
+    private String appendInfo() {
+        List<AppInfo> all = db.appInfoDao().getAll();
+        StringBuilder sb = new StringBuilder();
+        sb.append('\n');
+        sb.append("gender,");
+        sb.append(';');
+        sb.append("age");
+        sb.append('\n');
+        for (AppInfo info : all) {
+            sb.append(info.getGender());
+            sb.append(';');
+            sb.append(info.getAge());
+            sb.append('\n');
+        }
+        return sb.toString();
     }
 
 }

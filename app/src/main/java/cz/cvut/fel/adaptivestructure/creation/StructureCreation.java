@@ -3,7 +3,6 @@ package cz.cvut.fel.adaptivestructure.creation;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.os.Build;
 import android.text.InputType;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -15,7 +14,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import androidx.annotation.RequiresApi;
 import cz.cvut.fel.adaptivestructure.database.DatabaseInit;
 import cz.cvut.fel.adaptivestructure.entity.AppInfo;
 import cz.cvut.fel.adaptivestructure.entity.Structure;
@@ -42,26 +40,26 @@ public class StructureCreation {
         List<String> buttons = new LinkedList<>();
         buttons.add("Grafy");
         buttons.add("Zaplatit");
+        buttons.add("Běžný účet");
         buttons.add("Odměny");
         buttons.add("Menu");
         buttons.add("Pošta");
         buttons.add("Úročení");
-        buttons.add("Běžný účet");
         buttons.add("Spořící účet");
         pairs.put("mainPage", buttons);
         //
-        List<String> blaButtons = new LinkedList<>();
-        blaButtons.add("Kategorie");
-        blaButtons.add("Příjmy");
-        pairs.put("Grafy", blaButtons);
+        List<String> graphsButtons = new LinkedList<>();
+        graphsButtons.add("Kategorie");
+        graphsButtons.add("Příjmy");
+        pairs.put("Grafy", graphsButtons);
         //
-        List<String> bolButtons = new LinkedList<>();
-        bolButtons.add("Druhy");
-        bolButtons.add("Zapnuté");
-        bolButtons.add("V okolí");
-        bolButtons.add("E-shopy");
-        bolButtons.add("Brzy končí");
-        pairs.put("Odměny", bolButtons);
+        List<String> rewardsButtons = new LinkedList<>();
+        rewardsButtons.add("Druhy");
+        rewardsButtons.add("Zapnuté");
+        rewardsButtons.add("V okolí");
+        rewardsButtons.add("E-shopy");
+        rewardsButtons.add("Brzy končí");
+        pairs.put("Odměny", rewardsButtons);
         //
         List<String> menuButtons = new LinkedList<>();
         menuButtons.add("Pošli mi peníze");
@@ -90,30 +88,31 @@ public class StructureCreation {
         //
         pairs.put("Pošli mi peníze", new LinkedList<>());
         //
-        List<String> platbyButtons = new LinkedList<>();
-        platbyButtons.add("Trvalé příkazy");
-        platbyButtons.add("Spoření");
-        pairs.put("Pravidelné platby", platbyButtons);
+        List<String> paymentsButtons = new LinkedList<>();
+        paymentsButtons.add("Trvalé příkazy");
+        paymentsButtons.add("Spoření");
+        pairs.put("Pravidelné platby", paymentsButtons);
         //
-        List<String> trvaleButtons = new LinkedList<>();
-        trvaleButtons.add("Nový trvalý příkaz");
-        pairs.put("Trvalé příkazy", trvaleButtons);
+        List<String> longTimeButtons = new LinkedList<>();
+        longTimeButtons.add("Nový trvalý příkaz");
+        pairs.put("Trvalé příkazy", longTimeButtons);
         //
-        List<String> sporeniButtons = new LinkedList<>();
-        sporeniButtons.add("Nové pravidelné spoření");
-        pairs.put("Spoření", sporeniButtons);
+        List<String> savingsButtons = new LinkedList<>();
+        savingsButtons.add("Nové pravidelné spoření");
+        pairs.put("Spoření", savingsButtons);
         //
         pairs.put("Nový trvalý příkaz", new LinkedList<>());
         pairs.put("Nové pravidelné spoření", new LinkedList<>());
         //
-        List<String> inkasaASIPOButtons = new LinkedList<>();
-        inkasaASIPOButtons.add("Inkasa");
-        inkasaASIPOButtons.add("SIPO");
-        pairs.put("Inkasa a SIPO", inkasaASIPOButtons);
+
+        List<String> incomeANSIPOButtons = new LinkedList<>();
+        incomeANSIPOButtons.add("Inkasa");
+        incomeANSIPOButtons.add("SIPO");
+        pairs.put("Inkasa a SIPO", incomeANSIPOButtons);
         //
-        List<String> inkasaButtons = new LinkedList<>();
-        inkasaButtons.add("Nové inkaso");
-        pairs.put("Inkasa", inkasaButtons);
+        List<String> incomeButtons = new LinkedList<>();
+        incomeButtons.add("Nové inkaso");
+        pairs.put("Inkasa", incomeButtons);
         //
         List<String> SIPOButtons = new LinkedList<>();
         SIPOButtons.add("Nové SIPO");
@@ -121,10 +120,11 @@ public class StructureCreation {
         //
         pairs.put("Nové inkaso", new LinkedList<>());
         pairs.put("Nové SIPO", new LinkedList<>());
+
         //
-        List<String> sablonyButtons = new LinkedList<>();
-        sablonyButtons.add("Nová šablona");
-        pairs.put("Šablony", sablonyButtons);
+        List<String> templatesButtons = new LinkedList<>();
+        templatesButtons.add("Nová šablona");
+        pairs.put("Šablony", templatesButtons);
         //
         pairs.put("Nová šablona", new LinkedList<>());
         //
@@ -132,9 +132,9 @@ public class StructureCreation {
         //
         pairs.put("Karty", new LinkedList<>());
         //
-        List<String> pojisteniButtons = new LinkedList<>();
-        pojisteniButtons.add("Nové pojištění");
-        pairs.put("Pojištění", pojisteniButtons);
+        List<String> insuranceButtons = new LinkedList<>();
+        insuranceButtons.add("Nové pojištění");
+        pairs.put("Pojištění", insuranceButtons);
         //
         pairs.put("Nové pojištění", new LinkedList<>());
         //
@@ -142,17 +142,17 @@ public class StructureCreation {
         pairs.put("Hypotéky", new LinkedList<>());
         pairs.put("Kontakty", new LinkedList<>());
         //
-        List<String> uroceniButtons = new LinkedList<>();
-        uroceniButtons.add("Tento měsíc");
-        uroceniButtons.add("Příští měsíc");
-        pairs.put("Úročení", uroceniButtons);
+        List<String> interestButtons = new LinkedList<>();
+        interestButtons.add("Tento měsíc");
+        interestButtons.add("Příští měsíc");
+        pairs.put("Úročení", interestButtons);
         //
         pairs.put("Tento měsíc", new LinkedList<>());
         pairs.put("Příští měsíc", new LinkedList<>());
         //
-        List<String> zpravyButtons = new LinkedList<>();
-        zpravyButtons.add("Nová zpráva");
-        pairs.put("Pošta", zpravyButtons);
+        List<String> messagesButtons = new LinkedList<>();
+        messagesButtons.add("Nová zpráva");
+        pairs.put("Pošta", messagesButtons);
         //
         pairs.put("Nová zpráva", new LinkedList<>());
         //
@@ -161,7 +161,6 @@ public class StructureCreation {
         return pairs;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public static Structure getOrMakeStructure(Context context) {
         Structure highestVersion = DatabaseInit.getASDatabase(context).structureDao().getHighestVersion();
         if (highestVersion == null) {

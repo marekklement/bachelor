@@ -3,15 +3,12 @@ package cz.cvut.fel.adaptivestructure.dao;
 import java.util.List;
 
 import androidx.room.Dao;
-import androidx.room.Delete;
-import androidx.room.Insert;
 import androidx.room.Query;
-import androidx.room.Update;
 import cz.cvut.fel.adaptivestructure.entity.AppInfo;
 
 
 @Dao
-public interface AppInfoDao {
+public interface AppInfoDao extends BaseDao<AppInfo> {
 
     @Query("SELECT * FROM appinfo")
     List<AppInfo> getAll();
@@ -25,21 +22,9 @@ public interface AppInfoDao {
     @Query("SELECT * FROM appinfo WHERE gender LIKE :gender")
     List<AppInfo> getByGender(String gender);
 
-    @Query("SELECT uid FROM node ORDER BY uid DESC LIMIT 1")
+    @Query("SELECT id FROM node ORDER BY id DESC LIMIT 1")
     int findHighestId();
 
     @Query("DELETE FROM appinfo")
     void deleteAll();
-
-    @Insert
-    void insertAll(AppInfo... appInfos);
-
-    @Insert
-    void insert(AppInfo appInfo);
-
-    @Delete
-    void delete(AppInfo appInfo);
-
-    @Update
-    void update(AppInfo appInfo);
 }

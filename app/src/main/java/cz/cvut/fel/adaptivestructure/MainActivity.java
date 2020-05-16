@@ -2,14 +2,13 @@ package cz.cvut.fel.adaptivestructure;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.SurfaceView;
+import android.view.ViewGroup;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -28,7 +27,6 @@ public class MainActivity extends AppCompatActivity {
     public SurfaceView surfaceView;
     AdaptationPrepare adaptationPrepare;
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,9 +38,9 @@ public class MainActivity extends AppCompatActivity {
         // wait for permissions
         //
         surfaceView = new SurfaceView(this);
-        surfaceView.getHolder().setFixedSize(1, 1);
+        surfaceView.setLayoutParams(new ViewGroup.LayoutParams(1, 1));
         // delete all to test
-//        DatabaseInit.getASDatabase(this).cleanDatabase();
+        //        DatabaseInit.getASDatabase(this).cleanDatabase();
         setContentView(R.layout.activity_main);
         adaptationPrepare = AdaptationPrepare.getAdaptationMaker();
         MoveMaker.makeMove(this, surfaceView);

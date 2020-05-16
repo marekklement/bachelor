@@ -1,7 +1,6 @@
 package cz.cvut.fel.adaptivestructure.adaptation;
 
 import android.app.Activity;
-import android.os.Build;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +12,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import androidx.annotation.RequiresApi;
 import cz.cvut.fel.adaptivestructure.creation.StructureCreation;
 import cz.cvut.fel.adaptivestructure.database.ASDatabase;
 import cz.cvut.fel.adaptivestructure.database.DatabaseInit;
@@ -79,11 +77,14 @@ public class MoveMaker {
      * @param activity
      * @param surfaceView
      */
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public static void makeMove(Activity activity, SurfaceView surfaceView) {
         if (MoveMaker.getInstance().nextView == null) {
             AdaptationProvider ap = new AdaptationProvider(activity);
-            ap.changeStructure();
+            try {
+                ap.changeStructure();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             Structure structure = StructureCreation.getOrMakeStructure(activity);
             String mainPageName = PropertyUtil.getMainPageName(activity);
             List<String> mainPage = structure.getPages().get(mainPageName);
@@ -107,6 +108,7 @@ public class MoveMaker {
      * @param viewName
      * @return
      */
+
     private View move(Activity context, List<String> buttons, String className, String viewName) {
 
         db = DatabaseInit.getASDatabase(context);
@@ -117,12 +119,7 @@ public class MoveMaker {
             }
             setTimeSession(parents.get(0));
         }
-        int nextId = db.nodeDao().findHighestId();
-        if (id == 1) {
-            id = nextId + 1;
-        } else if (nextId > id) {
-            id = nextId;
-        }
+        incrementId();
         if (viewName != null) {
             currentViewName = viewName;
         } else {
@@ -139,21 +136,35 @@ public class MoveMaker {
         }
         View view;
         try {
-            String s = XMLMaker.generateXML(currentViewName, className, buttons, context);
+            XMLMaker.generateXML(currentViewName, className, buttons, context);
             view = DynamicLayoutInflator.inflateName(context, currentViewName);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
-        if (byId == null) {
-            view.setId(id);
-            id = id + 1;
-        } else {
-            view.setId(byId.getUid());
-        }
+        setId(view, byId);
         AdaptationPrepare.getAdaptationMaker().createApplicationStructure(view, currentViewName, buttons);
         nextView = view;
         MoveMaker.getInstance().setOnClickListeners(view, context);
         return view;
+    }
+
+    private void setId(View view, Node node) {
+        if (node == null) {
+            view.setId(id);
+            id = id + 1;
+        } else {
+            int nodeId = node.getId();
+            view.setId(nodeId);
+        }
+    }
+
+    private void incrementId() {
+        int nextId = db.nodeDao().findHighestId();
+        if (id == 1) {
+            id = nextId + 1;
+        } else if (nextId > id) {
+            id = nextId;
+        }
     }
 
     private void setTimeSession(Node node) {
@@ -184,7 +195,6 @@ public class MoveMaker {
                 if (childAt instanceof Button) {
                     Button button = (Button) childAt;
                     button.setOnClickListener(new View.OnClickListener() {
-                        @RequiresApi(api = Build.VERSION_CODES.N)
                         @Override
                         public void onClick(View v) {
                             if (v instanceof Button) {
@@ -233,9 +243,9 @@ public class MoveMaker {
             pv.removeView(surfaceView);
             vg.addView(surfaceView);
             context.setContentView(vg);
-        } else {
-            context.finish();
-            System.exit(0);
+            //        } else {
+            //            context.finish();
+            //            System.exit(0);
         }
     }
 }

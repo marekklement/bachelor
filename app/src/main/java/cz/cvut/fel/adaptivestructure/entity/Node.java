@@ -5,7 +5,6 @@ import java.util.List;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
-import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 import cz.cvut.fel.adaptivestructure.converter.ListStringConverter;
 import cz.cvut.fel.adaptivestructure.converter.LocalDateTimeConverter;
@@ -16,10 +15,7 @@ import cz.cvut.fel.adaptivestructure.converter.LocalDateTimeConverter;
  * @author Marek Klement
  */
 @Entity
-public class Node {
-    @PrimaryKey
-    private int uid;
-
+public class Node extends Identifiable {
     @ColumnInfo(name = "name")
     private String name;
 
@@ -93,14 +89,6 @@ public class Node {
 
     public void setButtons(List<String> buttons) {
         this.buttons = buttons;
-    }
-
-    public int getUid() {
-        return uid;
-    }
-
-    public void setUid(int uid) {
-        this.uid = uid;
     }
 
     public String getName() {

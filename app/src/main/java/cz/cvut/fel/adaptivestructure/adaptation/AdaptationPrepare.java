@@ -81,8 +81,8 @@ public class AdaptationPrepare implements Detector.ImageListener {
     void createApplicationStructure(View view, String name, List<String> buttons) {
         db = DatabaseInit.getASDatabase(context);
         int parent = -1;
-        if (currentNode != null && currentNode.getUid() != view.getId()) {
-            parent = currentNode.getUid();
+        if (currentNode != null && currentNode.getId() != view.getId()) {
+            parent = currentNode.getId();
         }
         currentNode = createNode(view.getId(), name, parent, buttons);
     }
@@ -96,12 +96,13 @@ public class AdaptationPrepare implements Detector.ImageListener {
      * @param buttons
      * @return
      */
-    public Node createNode(int uid, String name, int parent, List<String> buttons, Context context) {
+
+    Node createNode(int uid, String name, int parent, List<String> buttons, Context context) {
         ASDatabase db = DatabaseInit.getASDatabase(context);
         Node node = db.nodeDao().getById(uid);
         if (node == null) {
             node = new Node();
-            node.setUid(uid);
+            node.setId(uid);
             node.setName(name);
             node.setParent(parent);
             node.setButtons(buttons);
@@ -150,7 +151,7 @@ public class AdaptationPrepare implements Detector.ImageListener {
                 System.out.println("NO EMOTION");
             } else {
                 states.setRate(faceEmotions);
-                this.analiseEmotions();
+                this.analyzeEmotions();
             }
         }
     }
@@ -174,7 +175,7 @@ public class AdaptationPrepare implements Detector.ImageListener {
     /**
      * This method analyse emotions and update node when emotion is changed
      */
-    private void analiseEmotions() {
+    private void analyzeEmotions() {
         Collection<State> stateCollection = states.getStatesLikeCollection();
         State oldCurrentState = currentState;
         currentState = states.getState(NEUTRAL_STATE);

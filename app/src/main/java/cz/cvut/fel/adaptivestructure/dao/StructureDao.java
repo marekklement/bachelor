@@ -3,10 +3,7 @@ package cz.cvut.fel.adaptivestructure.dao;
 import java.util.List;
 
 import androidx.room.Dao;
-import androidx.room.Delete;
-import androidx.room.Insert;
 import androidx.room.Query;
-import androidx.room.Update;
 import cz.cvut.fel.adaptivestructure.entity.Structure;
 
 /**
@@ -15,7 +12,7 @@ import cz.cvut.fel.adaptivestructure.entity.Structure;
  * @author Marek Klement
  */
 @Dao
-public interface StructureDao {
+public interface StructureDao extends BaseDao<Structure> {
     @Query("SELECT * FROM structure")
     List<Structure> getAll();
 
@@ -30,16 +27,4 @@ public interface StructureDao {
 
     @Query("DELETE FROM structure")
     void deleteAll();
-
-    @Insert
-    void insertAll(Structure... structures);
-
-    @Insert
-    void insert(Structure structure);
-
-    @Delete
-    void delete(Structure structure);
-
-    @Update
-    void update(Structure structure);
 }
