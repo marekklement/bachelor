@@ -46,6 +46,7 @@ public class StructureCreation {
         buttons.add("Pošta");
         buttons.add("Úročení");
         buttons.add("Spořící účet");
+        buttons.add("E-shopy");
         pairs.put("mainPage", buttons);
         //
         List<String> graphsButtons = new LinkedList<>();
@@ -57,7 +58,6 @@ public class StructureCreation {
         rewardsButtons.add("Druhy");
         rewardsButtons.add("Zapnuté");
         rewardsButtons.add("V okolí");
-        rewardsButtons.add("E-shopy");
         rewardsButtons.add("Brzy končí");
         pairs.put("Odměny", rewardsButtons);
         //
@@ -72,6 +72,7 @@ public class StructureCreation {
         menuButtons.add("Půjčky");
         menuButtons.add("Hypotéky");
         menuButtons.add("Kontakty");
+        menuButtons.add("Nová šablona");
         pairs.put("Menu", menuButtons);
         //
         pairs.put("Kategorie", new LinkedList<>());
@@ -106,24 +107,23 @@ public class StructureCreation {
         //
 
         List<String> incomeANSIPOButtons = new LinkedList<>();
-        incomeANSIPOButtons.add("Inkasa");
+        incomeANSIPOButtons.add("Income");
         incomeANSIPOButtons.add("SIPO");
-        pairs.put("Inkasa a SIPO", incomeANSIPOButtons);
+        pairs.put("Income and SIPO", incomeANSIPOButtons);
         //
         List<String> incomeButtons = new LinkedList<>();
-        incomeButtons.add("Nové inkaso");
-        pairs.put("Inkasa", incomeButtons);
+        incomeButtons.add("New Income");
+        pairs.put("Income", incomeButtons);
         //
         List<String> SIPOButtons = new LinkedList<>();
-        SIPOButtons.add("Nové SIPO");
+        SIPOButtons.add("New SIPO");
         pairs.put("SIPO", SIPOButtons);
         //
-        pairs.put("Nové inkaso", new LinkedList<>());
-        pairs.put("Nové SIPO", new LinkedList<>());
+        pairs.put("New Income", new LinkedList<>());
+        pairs.put("New SIPO", new LinkedList<>());
 
         //
         List<String> templatesButtons = new LinkedList<>();
-        templatesButtons.add("Nová šablona");
         pairs.put("Šablony", templatesButtons);
         //
         pairs.put("Nová šablona", new LinkedList<>());

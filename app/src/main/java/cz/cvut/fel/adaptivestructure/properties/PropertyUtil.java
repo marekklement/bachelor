@@ -31,7 +31,10 @@ public class PropertyUtil {
         Resources resources = context.getResources();
 
         try {
-            InputStream rawResource = resources.openRawResource(R.raw.config);
+            int id = context.getResources().getIdentifier("config", "raw",
+                    context.getPackageName());
+            System.out.println("This is id: " + id);
+            InputStream rawResource = context.getResources().openRawResource(id);
             Properties properties = new Properties();
             properties.load(rawResource);
             return properties.getProperty(name);

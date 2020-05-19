@@ -16,12 +16,6 @@ public interface StructureDao extends BaseDao<Structure> {
     @Query("SELECT * FROM structure")
     List<Structure> getAll();
 
-    @Query("SELECT * FROM structure WHERE version IN (:structureIds)")
-    List<Structure> loadAllByIds(long[] structureIds);
-
-    @Query("SELECT * FROM structure WHERE version = (:version)")
-    Structure getById(int version);
-
     @Query("SELECT * FROM structure ORDER BY version DESC LIMIT 1")
     Structure getHighestVersion();
 
